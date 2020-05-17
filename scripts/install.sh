@@ -137,7 +137,8 @@ git clone https://github.com/fusesource/hawtjni.git >> $logfile 2>&1
 cd hawtjni >> $logfile 2>&1
 log "Building HawtJNI..."
 # Callback assert fails on 32 bit ARM, so skipping tests until I can fix
-mvn clean install -Dmaven.compiler.source=11 -Dmaven.compiler.target=11 -DskipTests --log-file="../java-periphery/scripts/hawtjni.log" >> $logfile 2>&1
+# hawtjni-example fails to build on armv7l
+mvn clean install -Dmaven.compiler.source=11 -Dmaven.compiler.target=11 -DskipTests -pl '!hawtjni-example' --log-file="../java-periphery/scripts/hawtjni.log" >> $logfile 2>&1
 
 # Java Periphery build
 cd >> $logfile 2>&1
