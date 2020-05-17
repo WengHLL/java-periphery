@@ -35,6 +35,7 @@ sudo apt-get -y install build-essential autoconf automake libtool git >> $logfil
 
 # JDK stuff
 javahome=/usr/lib/jvm/jdk11
+export javahome
 # ARM 32
 if [ "$arch" = "armv7l" ]; then
 	jdkurl="https://cdn.azul.com/zulu-embedded/bin/zulu11.39.61-ca-jdk11.0.7-linux_aarch32hf.tar.gz"
@@ -48,7 +49,7 @@ elif [ "$arch" = "i586" ] || [ "$arch" = "i686" ]; then
 elif [ "$arch" = "x86_64" ]; then
     jdkurl="https://cdn.azul.com/zulu/bin/zulu11.39.15-ca-jdk11.0.7-linux_musl_x64.tar.gz"
 fi
-# JUst JDK archive name
+# Just JDK archive name
 jdkarchive=$(basename "$jdkurl")
 
 
@@ -72,10 +73,10 @@ filename="${filename%.*}"
 sudo mkdir -p /usr/lib/jvm >> $logfile 2>&1
 log "Moving $tmpdir/$filename to $javahome"
 sudo -E mv "$tmpdir/$filename" "$javahome" >> $logfile 2>&1
-sudo -E update-alternatives --quiet --install "/usr/bin/java" "java" "$javahome/bin/java" 1 >> $logfile 2>&1
-sudo -E update-alternatives --quiet --install "/usr/bin/javac" "javac" "$javahome/bin/javac" 1 >> $logfile 2>&1
-sudo -E update-alternatives --quiet --install "/usr/bin/jar" "jar" "$javahome/bin/jar" 1 >> $logfile 2>&1
-sudo -E update-alternatives --quiet --install "/usr/bin/javadoc" "javadoc" "$javahome/bin/javadoc" 1 >> $logfile 2>&1
+sudo -E update-alternatives --install "/usr/bin/java" "java" "$javahome/bin/java" 1 >> $logfile 2>&1
+sudo -E update-alternatives --install "/usr/bin/javac" "javac" "$javahome/bin/javac" 1 >> $logfile 2>&1
+sudo -E update-alternatives --install "/usr/bin/jar" "jar" "$javahome/bin/jar" 1 >> $logfile 2>&1
+sudo -E update-alternatives --install "/usr/bin/javadoc" "javadoc" "$javahome/bin/javadoc" 1 >> $logfile 2>&1
 # See if JAVA_HOME exists and if not add it to /etc/environment
 if grep -q "JAVA_HOME" /etc/environment; then
 	log "JAVA_HOME already exists"
@@ -92,6 +93,7 @@ mavenurl="http://www.gtlib.gatech.edu/pub/apache/maven/maven-3/3.6.3/binaries/ap
 mavenarchive=$(basename "$mavenurl")
 mavenver="apache-maven-3.6.3"
 mavenhome="/opt/maven"
+export mavenhome
 mavenbin="/opt/maven/bin"
 
 # Install latest Maven
