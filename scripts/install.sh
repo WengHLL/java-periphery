@@ -132,7 +132,7 @@ export JAVA_HOME=$javahome
 cd >> $logfile 2>&1
 log "Removing hawtjni"
 rm -rf hawtjni >> $logfile 2>&1
-log "Cloning HawtJNI jdk11 branch..."
+log "Cloning HawtJNI..."
 git clone https://github.com/fusesource/hawtjni.git >> $logfile 2>&1
 cd hawtjni >> $logfile 2>&1
 log "Building HawtJNI..."
