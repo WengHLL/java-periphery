@@ -65,12 +65,13 @@ Ubuntu 20.04 LTS Focal Fossa using 5.6 kernel.
 On the NanoPi Duo the built in button causes it to shutdown by default. You can
 remove the r_gpio_keys section in the DTB as follows (this may work on other SBCs,
 but you'll need to know the correct dtb file and section to remove) :
-*cd /boot/dtb
-*sudo cp sun8i-h2-plus-nanopi-duo.dtb sun8i-h2-plus-nanopi-duo.dtb.old
-*sudo dtc -@ -I dtb -O dts -o sun8i-h2-plus-nanopi-duo.dts sun8i-h2-plus-nanopi-duo.dtb
-*sudo nano sun8i-h2-plus-nanopi-duo.dts (remove r_gpio_keys section)
-*sudo dtc -@ -I dts -O dtb -o sun8i-h2-plus-nanopi-duo.dtb sun8i-h2-plus-nanopi-duo.dts
-*reboot
+* `cd /boot/dtb`
+* `sudo cp sun8i-h2-plus-nanopi-duo.dtb sun8i-h2-plus-nanopi-duo.dtb.old`
+* `sudo dtc -@ -I dtb -O dts -o sun8i-h2-plus-nanopi-duo.dts sun8i-h2-plus-nanopi-duo.dtb`
+* `sudo nano sun8i-h2-plus-nanopi-duo.dts`
+    * Remove `r_gpio_keys` section
+* `sudo dtc -@ -I dts -O dtb -o sun8i-h2-plus-nanopi-duo.dtb sun8i-h2-plus-nanopi-duo.dts`
+* `reboot`
 
 ## Non-root access
 If you want to access devices without root do the following (you can try udev
