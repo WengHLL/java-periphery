@@ -148,6 +148,14 @@ your target platform it could be different. To see a list of demos
 [browse](https://github.com/sgjava/java-periphery/tree/master/src/main/java/com/codeferm/periphery/demo)
 code.
 
+## Use Java Periphery in your own Maven projects
+After bulding Java Periphery simpily add the following artifact:
+```
+<groupId>com.codeferm</groupId>
+<artifactId>java-periphery</artifactId>
+<version>1.0.0-SNAPSHOT</version>
+```
+
 ## Zulu Mission Control
 [Zulu Mission Control](https://docs.azul.com/zmc/ZMCUserGuide/Title.htm) allows
 you to profile your applications.
@@ -156,11 +164,3 @@ zmc and launch on your desktop. To profile your Java Periphery application use:
 `java -XX:+FlightRecorder -Djava.rmi.server.hostname=your_ip -Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.port=8888 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -cp java-periphery-1.0.0-SNAPSHOT.jar:java-periphery-1.0.0-SNAPSHOT-linux32.jar com.codeferm.periphery.demo.GpioPerf`
 
 ![Title](images/zmc.png)
-
-## Use Java Periphery in your own Maven projects
-After bulding Java Periphery simpily add the following artifact:
-```
-<groupId>com.codeferm</groupId>
-<artifactId>java-periphery</artifactId>
-<version>1.0.0-SNAPSHOT</version>
-```
