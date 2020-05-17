@@ -113,7 +113,7 @@ if grep -q "M2_HOME" /etc/environment; then
 	log "M2_HOME already exists"
 else
 	# OS will not find Maven by M2_HOME, so create link to where it's looking
-	sudo -E ln -s "$mavenbin/mvn" /usr/bin/mvn >> $logfile 2>&1
+	sudo -E ln -sf "$mavenbin/mvn" /usr/bin/mvn >> $logfile 2>&1
 	# Add M2_HOME to /etc/environment
 	log "Adding M2_HOME to /etc/environment"
 	sudo -E sh -c 'echo "M2_HOME=$mavenhome" >> /etc/environment'
