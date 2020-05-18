@@ -176,7 +176,7 @@ zmc and launch on your desktop. To profile your Java Periphery application use:
 
 ## GPIO Performance
 Note that most performance tests focus on writes and not CPU overhead, so it's
-hard to compare. Technically you will bo actually doing something like bit
+hard to compare. Technically you will actually be doing something like bit
 banging to simulate a protocol, so you need extra CPU bandwidth to do that.
 
 |SBC              |Write KHz |Read Khz |Average CPU|
