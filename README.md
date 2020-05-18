@@ -31,9 +31,6 @@ IoT space.
 libraries to work since most SBCs have different chip sets. The trade off is
 performance compared to native C written to specific chip sets. However, since
 I'm wrapping C with JNI it guarantees the fastest userspace experience for Java.
-In fact, in early tests I measured a frequency of ~250 KHz using GPIO or ~500K
-write operations per second using a scope. CPU usage was ~20% during the
-tests. This was on a NanoPi Duo v1.0 running at 1 MHz.
 * Why Armbian? Because Armbian supports many SBCs and the idea is to be truly
 SBC cross platform. See [downloads](https://www.armbian.com/download).
 * Why Java 11? Because Java 11 is the current LTS version of Java. Java 8 the
@@ -176,3 +173,13 @@ zmc and launch on your desktop. To profile your Java Periphery application use:
 `java -XX:+FlightRecorder -Djava.rmi.server.hostname=your_ip -Dcom.sun.management.jmxremote=true -Dcom.sun.management.jmxremote.port=8888 -Dcom.sun.management.jmxremote.authenticate=false -Dcom.sun.management.jmxremote.ssl=false -cp java-periphery-1.0.0-SNAPSHOT.jar:java-periphery-1.0.0-SNAPSHOT-linux32.jar com.codeferm.periphery.demo.GpioPerf`
 
 ![Title](images/zmc.png)
+
+## GPIO Performance
+Note that most performance tests focus on writes and not CPU overhead, so it's
+hard to compare. Technically you will bo actually doing something like bit
+banging to simulate a protocol, so you need extra CPU bandwidth to do that.
+
+|SBC              |Write KHz |Read Khz |Average CPU|
+| --------------- | -------- | ------- | --------- |
+|Nano Pi Duo v1.0 |500       |318      |25%        |
+|Nano Pi Neo Plus2|654       |413      |27%        |
