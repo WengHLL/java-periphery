@@ -170,7 +170,7 @@ Note that most performance tests focus on writes and not CPU overhead, so it's
 hard to compare. Technically you will actually be doing something like bit
 banging to simulate a protocol, so you need extra CPU bandwidth to do that.
 
-|SBC              |CPU Freq|Write KHz|Read Khz|Average CPU|
+|SBC              |CPU Freq|Write KHz|Read KHz|Average CPU|
 | --------------- | ------ | ------- | ------ | --------- |
 |Nano Pi Duo v1.0 |1.0 MHz |500      |318     |27%        |
 |Nano Pi Neo Plus2|1.0 MHz |654      |413     |27%        |
