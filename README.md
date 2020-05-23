@@ -170,12 +170,12 @@ Note that most performance tests focus on writes and not CPU overhead, so it's
 hard to compare. Technically you will actually be doing something like bit
 banging to simulate a protocol, so you need extra CPU bandwidth to do that.
 
-|SBC              |CPU Freq|Write KHz|Read KHz|Average CPU|
-| --------------- | ------ | ------- | ------ | --------- |
-|Odroid XU4       |2.0 MHz |192      |195     |14%        |
-|Nano Pi Duo v1.0 |1.0 MHz |500      |318     |27%        |
-|Nano Pi Neo Plus2|1.0 MHz |654      |413     |27%        |
-|Odroid C2        |1.5 MHz |689      |488     |29%        |
+|SBC              |OS           |CPU Freq|Write KHz|Read KHz|Average CPU|
+| --------------- | ----------- | ------ | ------- | ------ | --------- |
+|Odroid XU4       |Armbian Focal|2.0 MHz |192      |195     |14%        |
+|Nano Pi Duo v1.0 |Armbian Focal|1.0 MHz |500      |318     |27%        |
+|Nano Pi Neo Plus2|Armbian Focal|1.0 MHz |654      |413     |27%        |
+|Odroid C2        |Armbian Focal|1.5 MHz |689      |488     |29%        |
 
 ## Zulu Mission Control
 [Zulu Mission Control](https://docs.azul.com/zmc/ZMCUserGuide/Title.htm) allows
