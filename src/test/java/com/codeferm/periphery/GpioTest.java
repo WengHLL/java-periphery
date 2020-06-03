@@ -3,10 +3,17 @@
  */
 package com.codeferm.periphery;
 
+import static com.codeferm.periphery.Gpio.GPIO_BIAS_DEFAULT;
+import static com.codeferm.periphery.Gpio.GPIO_BIAS_DISABLE;
+import static com.codeferm.periphery.Gpio.GPIO_BIAS_PULL_DOWN;
+import static com.codeferm.periphery.Gpio.GPIO_BIAS_PULL_UP;
 import static com.codeferm.periphery.Gpio.GPIO_DIR_IN;
 import static com.codeferm.periphery.Gpio.GPIO_DIR_OUT;
 import static com.codeferm.periphery.Gpio.GPIO_DIR_OUT_HIGH;
 import static com.codeferm.periphery.Gpio.GPIO_DIR_OUT_LOW;
+import static com.codeferm.periphery.Gpio.GPIO_DRIVE_DEFAULT;
+import static com.codeferm.periphery.Gpio.GPIO_DRIVE_OPEN_DRAIN;
+import static com.codeferm.periphery.Gpio.GPIO_DRIVE_OPEN_SOURCE;
 import static com.codeferm.periphery.Gpio.GPIO_EDGE_BOTH;
 import static com.codeferm.periphery.Gpio.GPIO_EDGE_FALLING;
 import static com.codeferm.periphery.Gpio.GPIO_EDGE_NONE;
@@ -57,5 +64,14 @@ public class GpioTest {
         assertEquals(1, GPIO_EDGE_RISING);
         assertEquals(2, GPIO_EDGE_FALLING);
         assertEquals(3, GPIO_EDGE_BOTH);
+        // enum gpio_bias
+        assertEquals(0, GPIO_BIAS_DEFAULT);
+        assertEquals(1, GPIO_BIAS_PULL_UP);
+        assertEquals(2, GPIO_BIAS_PULL_DOWN);
+        assertEquals(3, GPIO_BIAS_DISABLE);
+        // enum gpio_drive
+        assertEquals(0, GPIO_DRIVE_DEFAULT);
+        assertEquals(1, GPIO_DRIVE_OPEN_DRAIN);
+        assertEquals(2, GPIO_DRIVE_OPEN_SOURCE);
     }
 }

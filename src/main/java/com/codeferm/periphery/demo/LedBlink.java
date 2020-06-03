@@ -3,9 +3,15 @@
  */
 package com.codeferm.periphery.demo;
 
+import static com.codeferm.periphery.Common.cString;
+import static com.codeferm.periphery.Common.free;
 import com.codeferm.periphery.Gpio;
+import static com.codeferm.periphery.Gpio.GPIO_BIAS_DEFAULT;
 import static com.codeferm.periphery.Gpio.GPIO_DIR_OUT;
+import static com.codeferm.periphery.Gpio.GPIO_DRIVE_DEFAULT;
+import static com.codeferm.periphery.Gpio.GPIO_EDGE_NONE;
 import static com.codeferm.periphery.Gpio.GPIO_SUCCESS;
+import com.codeferm.periphery.Gpio.GpioConfig;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
@@ -61,8 +67,17 @@ public class LedBlink implements Callable<Integer> {
     @Override
     public Integer call() throws InterruptedException {
         var exitCode = 0;
+        // Set config object
+        final var config = new GpioConfig();
+        config.bias = GPIO_BIAS_DEFAULT;
+        config.direction = GPIO_DIR_OUT;
+        config.drive = GPIO_DRIVE_DEFAULT;
+        config.edge = GPIO_EDGE_NONE;
+        config.inverted = false;
+        final var labelPtr = cString(LedBlink.class.getSimpleName());
+        config.label = labelPtr;
         final var handle = Gpio.gpioNew();
-        if (Gpio.gpioOpen(handle, device, line, GPIO_DIR_OUT) == GPIO_SUCCESS) {
+        if (Gpio.gpioOpenAdvanced(handle, device, line, config) == GPIO_SUCCESS) {
             logger.info("Blinking LED");
             var i = 0;
             while (i < 10) {
@@ -78,6 +93,7 @@ public class LedBlink implements Callable<Integer> {
             logger.error(Gpio.gpioErrMessage(handle));
         }
         Gpio.gpioFree(handle);
+        free(labelPtr);
         return exitCode;
     }
 }

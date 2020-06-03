@@ -6,6 +6,7 @@ package com.codeferm.periphery;
 import static com.codeferm.periphery.Common.MAX_CHAR_ARRAY_LEN;
 import static com.codeferm.periphery.Common.jString;
 import static com.codeferm.periphery.Common.memMove;
+import org.fusesource.hawtjni.runtime.ClassFlag;
 import static org.fusesource.hawtjni.runtime.FieldFlag.CONSTANT;
 import org.fusesource.hawtjni.runtime.JniClass;
 import org.fusesource.hawtjni.runtime.JniField;
@@ -96,6 +97,49 @@ public class Gpio {
     public static int GPIO_EDGE_FALLING;
     @JniField(flags = {CONSTANT})
     public static int GPIO_EDGE_BOTH;
+    /**
+     * Bias constants.
+     */
+    @JniField(flags = {CONSTANT})
+    public static int GPIO_BIAS_DEFAULT;
+    @JniField(flags = {CONSTANT})
+    public static int GPIO_BIAS_PULL_UP;
+    @JniField(flags = {CONSTANT})
+    public static int GPIO_BIAS_PULL_DOWN;
+    @JniField(flags = {CONSTANT})
+    public static int GPIO_BIAS_DISABLE;
+    /**
+     * Drive constants.
+     */
+    @JniField(flags = {CONSTANT})
+    public static int GPIO_DRIVE_DEFAULT;
+    @JniField(flags = {CONSTANT})
+    public static int GPIO_DRIVE_OPEN_DRAIN;
+    @JniField(flags = {CONSTANT})
+    public static int GPIO_DRIVE_OPEN_SOURCE;
+
+    /**
+     * gpio_config struct as Java object.
+     */
+    @JniClass(name = "gpio_config_t", flags = {ClassFlag.STRUCT, ClassFlag.TYPEDEF})
+    public static class GpioConfig {
+
+        static {
+            LIBRARY.load();
+            init();
+        }
+
+        @JniMethod(flags = {CONSTANT_INITIALIZER})
+        private static native void init();
+        @JniField(flags = {CONSTANT}, accessor = "sizeof(gpio_config_t)")
+        public static int SIZEOF;
+        public int direction;
+        public int edge;
+        public int bias;
+        public int drive;
+        public boolean inverted;
+        public long label;
+    }
 
     /**
      * Allocate a GPIO handle. Returns a valid handle on success, or NULL on failure.
@@ -129,6 +173,40 @@ public class Gpio {
      */
     @JniMethod(accessor = "gpio_open_name")
     public static native int gpioOpenName(long gpio, String path, String name, int direction);
+
+    /**
+     * Open the character device GPIO with the specified GPIO line and configuration at the specified character device GPIO chip
+     * path (e.g. /dev/gpiochip0).
+     *
+     * gpio should be a valid pointer to an allocated GPIO handle structure. path is the GPIO chip character device path. line is
+     * the GPIO line number. config should be a valid pointer to a gpio_config_t structure with valid values. label can be NULL for
+     * a default consumer label.
+     *
+     * @param gpio Valid pointer to an allocated GPIO handle structure.
+     * @param path GPIO chip character device path.
+     * @param line GPIO line number.
+     * @param config Configuration struct.
+     * @return 0 on success, or a negative GPIO error code on failure.
+     */
+    @JniMethod(accessor = "gpio_open_advanced")
+    public static native int gpioOpenAdvanced(long gpio, String path, int line, GpioConfig config);
+
+    /**
+     * Open the character device GPIO with the specified GPIO name and configuration at the specified character device GPIO chip
+     * path (e.g. /dev/gpiochip0).
+     *
+     * gpio should be a valid pointer to an allocated GPIO handle structure. path is the GPIO chip character device path. name is
+     * the GPIO line name. config should be a valid pointer to a gpio_config_t structure with valid values. label can be NULL for a
+     * default consumer label.
+     *
+     * @param gpio Valid pointer to an allocated GPIO handle structure.
+     * @param path GPIO chip character device path.
+     * @param name GPIO line name.
+     * @param config Configuration struct.
+     * @return 0 on success, or a negative GPIO error code on failure.
+     */
+    @JniMethod(accessor = "gpio_open_name_advanced")
+    public static native int gpioOpenNameAdvanced(long gpio, String path, String name, GpioConfig config);
 
     /**
      * Open the sysfs GPIO with the specified line and direction.
@@ -203,6 +281,21 @@ public class Gpio {
     public static native int gpioReadEvent(long gpio, int[] edge, long[] timestamp);
 
     /**
+     * Poll multiple GPIOs for an edge event configured with gpio_set_edge(). For character device GPIOs, the edge event should be
+     * consumed with gpio_read_event(). For sysfs GPIOs, the edge event should be consumed with gpio_read().
+     *
+     * @param gpios A valid pointer to a size count array of GPIO handles opened with one of the gpio_open*() functions.
+     * @param count Number of gpio pointers.
+     * @param timeoutMs Positive number for a timeout in milliseconds, 0 for a non-blocking poll, or a negative number for a
+     * blocking poll.
+     * @param gpiosReady is an optional pointer to a size count array of bool that will be populated with true for the corresponding
+     * GPIO in the gpios array if an edge event occurred, or false if none occurred.
+     * @return Number of GPIOs for which an edge event occurred, 0 on timeout, or a negative GPIO error code on failure.
+     */
+    @JniMethod(accessor = "gpio_poll_multiple")
+    public static native int gpioPollMultiple(long[] gpios, int count, int timeoutMs, boolean[] gpiosReady);
+
+    /**
      * Get the configured direction of the GPIO.
      *
      * @param gpio Valid pointer to an allocated GPIO handle structure.
@@ -223,6 +316,36 @@ public class Gpio {
     public static native int gpioGetEdge(long gpio, int[] edge);
 
     /**
+     * Get the configured line bias of the GPIO.
+     *
+     * @param gpio Valid pointer to an allocated GPIO handle structure.
+     * @param bias
+     * @return 0 on success, or a negative GPIO error code on failure.
+     */
+    @JniMethod(accessor = "gpio_get_bias")
+    public static native int gpioGetBias(long gpio, int[] bias);
+
+    /**
+     * Get the configured line drive of the GPIO.
+     *
+     * @param gpio Valid pointer to an allocated GPIO handle structure.
+     * @param drive
+     * @return 0 on success, or a negative GPIO error code on failure.
+     */
+    @JniMethod(accessor = "gpio_get_drive")
+    public static native int gpioGetDrive(long gpio, int[] drive);
+
+    /**
+     * Get the configured line inverted of the GPIO.
+     *
+     * @param gpio Valid pointer to an allocated GPIO handle structure.
+     * @param inverted Active low.
+     * @return 0 on success, or a negative GPIO error code on failure.
+     */
+    @JniMethod(accessor = "gpio_get_inverted")
+    public static native int gpioGetInverted(long gpio, boolean[] inverted);
+
+    /**
      * Set the direction of the GPIO.
      *
      * @param gpio Valid pointer to an allocated GPIO handle structure.
@@ -236,11 +359,41 @@ public class Gpio {
      * Set the interrupt edge of the GPIO.
      *
      * @param gpio Valid pointer to an allocated GPIO handle structure.
-     * @param edge One of the direction values.
+     * @param edge One of the edge values.
      * @return 0 on success, or a negative GPIO error code on failure.
      */
     @JniMethod(accessor = "gpio_set_edge")
     public static native int gpioSetEdge(long gpio, int edge);
+
+    /**
+     * Set the bias of the GPIO.
+     *
+     * @param gpio Valid pointer to an allocated GPIO handle structure.
+     * @param bias One of the bias values.
+     * @return 0 on success, or a negative GPIO error code on failure.
+     */
+    @JniMethod(accessor = "gpio_set_bias")
+    public static native int gpioSetBias(long gpio, int bias);
+
+    /**
+     * Set the drive of the GPIO.
+     *
+     * @param gpio Valid pointer to an allocated GPIO handle structure.
+     * @param drive One of the drive values.
+     * @return 0 on success, or a negative GPIO error code on failure.
+     */
+    @JniMethod(accessor = "gpio_set_drive")
+    public static native int gpioSetDrive(long gpio, int drive);
+
+    /**
+     * Set the inverted value of the GPIO.
+     *
+     * @param gpio Valid pointer to an allocated GPIO handle structure.
+     * @param inverted Is line inverted (active low)?
+     * @return 0 on success, or a negative GPIO error code on failure.
+     */
+    @JniMethod(accessor = "gpio_set_inverted")
+    public static native int gpioSetInverted(long gpio, boolean inverted);
 
     /**
      * Return the line the GPIO handle was opened with.
@@ -280,6 +433,31 @@ public class Gpio {
     public static String gpioName(long gpio) {
         var str = new byte[MAX_CHAR_ARRAY_LEN];
         if (gpioName(gpio, str, str.length) < 0) {
+            throw new RuntimeException(gpioErrMessage(gpio));
+        }
+        return jString(str);
+    }
+
+    /**
+     * Return the line label of the GPIO.
+     *
+     * @param gpio Valid pointer to an allocated GPIO handle structure.
+     * @param str Line label.
+     * @param len Length of char array.
+     * @return 0 on success, or a negative GPIO error code on failure.
+     */
+    @JniMethod(accessor = "gpio_label")
+    public static native int gpioLabel(long gpio, byte[] str, long len);
+
+    /**
+     * Return the line lable of the GPIO. Wraps native method and simplifies.
+     *
+     * @param gpio Valid pointer to an allocated GPIO handle structure.
+     * @return Line label.
+     */
+    public static String gpioLabel(long gpio) {
+        var str = new byte[MAX_CHAR_ARRAY_LEN];
+        if (gpioLabel(gpio, str, str.length) < 0) {
             throw new RuntimeException(gpioErrMessage(gpio));
         }
         return jString(str);
