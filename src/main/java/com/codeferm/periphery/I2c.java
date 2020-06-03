@@ -8,12 +8,8 @@ import static com.codeferm.periphery.Common.free;
 import static com.codeferm.periphery.Common.jString;
 import static com.codeferm.periphery.Common.malloc;
 import static com.codeferm.periphery.Common.memMove;
-import static org.fusesource.hawtjni.runtime.ArgFlag.CRITICAL;
-import static org.fusesource.hawtjni.runtime.ArgFlag.NO_IN;
-import static org.fusesource.hawtjni.runtime.ArgFlag.NO_OUT;
 import org.fusesource.hawtjni.runtime.ClassFlag;
 import static org.fusesource.hawtjni.runtime.FieldFlag.CONSTANT;
-import org.fusesource.hawtjni.runtime.JniArg;
 import org.fusesource.hawtjni.runtime.JniClass;
 import org.fusesource.hawtjni.runtime.JniField;
 import org.fusesource.hawtjni.runtime.JniMethod;
@@ -35,7 +31,7 @@ public class I2c {
      */
     public static final int I2C_SUCCESS = 0;
     /**
-     * i2cMsg flags.
+     * I2cMsg flags.
      */
     public static final short I2C_M_TEN = 0x0010;
     public static final short I2C_M_RD = 0x0001;
@@ -83,7 +79,7 @@ public class I2c {
      * i2c_msg struct as Java object.
      */
     @JniClass(name = "i2c_msg", flags = {ClassFlag.STRUCT})
-    public static class i2cMsg {
+    public static class I2cMsg {
 
         static {
             LIBRARY.load();
@@ -101,35 +97,11 @@ public class I2c {
     }
 
     /**
-     * Move i2cMsg to native memory.
-     *
-     * @param dest Pointer to C memory.
-     * @param src i2cMsg Java object representing i2c_msg.
-     * @param size Amount of bytes to move.
-     */
-    @JniMethod(accessor = "memmove")
-    public static final native void msgToMem(
-            @JniArg(cast = "void *") long dest, @JniArg(cast = "const void *", flags = {NO_OUT, CRITICAL}) i2cMsg src, @JniArg(
-                    cast = "size_t") long size);
-
-    /**
-     * Move native memory to i2cMsg.
-     *
-     * @param dest i2cMsg Java object representing i2c_msg.
-     * @param src Pointer to C memory.
-     * @param size Amount of bytes to move.
-     */
-    @JniMethod(accessor = "memmove")
-    public static final native void memToMsg(
-            @JniArg(cast = "void *", flags = {NO_IN, CRITICAL}) i2cMsg dest, @JniArg(cast = "const void *") long src, @JniArg(
-                    cast = "size_t") long size);
-
-    /**
      * Read array from i2c register. Unlike i2cReadReg the bytes values are not "& 0xff", thus the caller will need to do this.
      *
      * In order to read a register, we first do a "dummy write" by writing 0 bytes to the register we want to read from. This is
      * similar to writing to a register except it's 1 byte rather than 2. Normally you can use an array of i2c_msg in C for multiple
-     * messages using i2c_transfer. There doesn't appear to be a way to do this with HawtJNI using i2cMsg[] and memmove, so we do
+     * messages using i2c_transfer. There doesn't appear to be a way to do this with HawtJNI using I2cMsg[] and memmove, so we do
      * two i2c_transfer calls.
      *
      * @param i2c Valid pointer to an allocated I2C handle structure.
@@ -140,7 +112,7 @@ public class I2c {
      */
     public static int i2cReadReg(final long i2c, final short addr, final short reg, final byte[] buf) {
         // First transaction is write
-        final var msg = new i2cMsg();
+        final var msg = new I2cMsg();
         msg.addr = addr;
         msg.flags = 0x00;
         msg.len = 1;
@@ -150,12 +122,8 @@ public class I2c {
         regVal[0] = (byte) reg;
         memMove(writeBuf, regVal, regVal.length);
         msg.buf = writeBuf;
-        // Allocate i2cMsg
-        final var msgPtr = malloc(i2cMsg.SIZEOF);
-        // Copy i2cMsg to native memory
-        msgToMem(msgPtr, msg, i2cMsg.SIZEOF);
         // Transfer message
-        var error = i2cTransfer(i2c, msgPtr, 1);
+        var error = i2cTransfer(i2c, msg, 1);
         // Free write buffer
         free(writeBuf);
         if (error == I2C_SUCCESS) {
@@ -166,18 +134,12 @@ public class I2c {
             // Allocate native memory for buffer
             final var readBuf = malloc(buf.length);
             msg.buf = readBuf;
-            // Copy i2cMsg to native memory
-            msgToMem(msgPtr, msg, i2cMsg.SIZEOF);
             // Transfer message
-            error = i2cTransfer(i2c, msgPtr, 1);
-            // Copy native memory to i2cMsg
-            memToMsg(msg, msgPtr, i2cMsg.SIZEOF);
+            error = i2cTransfer(i2c, msg, 1);
             memMove(buf, msg.buf, buf.length);
             // Free read buffer
             free(readBuf);
         }
-        // Free i2cMsg
-        free(msgPtr);
         return error;
     }
 
@@ -237,7 +199,7 @@ public class I2c {
      * @return 0 on success, or a negative I2C error code on failure.
      */
     public static int i2cWriteReg(final long i2c, final short addr, final short reg, final short value) {
-        final var msg = new i2cMsg();
+        final var msg = new I2cMsg();
         msg.addr = addr;
         msg.flags = 0x00;
         // Data consists of register and value
@@ -248,16 +210,10 @@ public class I2c {
         // Move data to native memory
         memMove(writeBuf, data, msg.len);
         msg.buf = writeBuf;
-        // Allocate native memory for i2cMsg
-        final var msgPtr = malloc(i2cMsg.SIZEOF);
-        // Copy i2cMsg to native memory
-        msgToMem(msgPtr, msg, i2cMsg.SIZEOF);
         // Transfer message
-        final var err = i2cTransfer(i2c, msgPtr, 1);
+        final var err = i2cTransfer(i2c, msg, 1);
         // Free native memory buffer
         free(writeBuf);
-        // Free native memory for i2cMsg
-        free(msgPtr);
         return err;
     }
 
@@ -291,13 +247,13 @@ public class I2c {
      * bitwise OR of their bitmasks.
      *
      * @param i2c Valid pointer to an allocated I2C handle structure.
-     * @param msgs A pointer to an array of i2cMsg.
+     * @param msgs A pointer to an array of I2cMsg.
      * @param count Number of messages to transfer.
      * @return 0 on success, or a negative I2C error code on failure.
      *
      */
     @JniMethod(accessor = "i2c_transfer")
-    public static native int i2cTransfer(long i2c, @JniArg(cast = "struct i2c_msg *") long msgs, long count);
+    public static native int i2cTransfer(long i2c, I2cMsg msgs, long count);
 
     /**
      * Close the I2C.
