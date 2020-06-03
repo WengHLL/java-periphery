@@ -44,11 +44,11 @@ do that manually.
 
 ## SBC configuration
 * If you are using Armbian then use `armbian-config` or edit `/boot/armbianEnv.txt`
-to configure various devices. User space devices are exposed through /dev or
+to configure various devices. Userspace devices are exposed through /dev or
 /sys. Verify the device is showing up prior to trying demo apps.
     * `sudo apt install armbian-config`
 * If you are not using Armbian then you will need to know how to configure
-devices to be exposed to user space for your Linux distribution and SBC model.
+devices to be exposed to userspace for your Linux distribution and SBC model.
 Check each log in scripts directory to be sure there were no errors after running
 install.sh.
 * Since linux 4.8 the GPIO sysfs interface is deprecated. Userspace should use
