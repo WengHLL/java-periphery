@@ -90,4 +90,20 @@ public class Common {
         }
         return new String(str, 0, i);
     }
+
+    /**
+     * Convert Java String to C style string. Remember to free native memory with free.
+     *
+     * @param str Java String.
+     * @return Pointer to C style string.
+     */
+    public static long cString(String str) {
+        // Add null terminator
+        final var cStr = str + "\0";
+        // Allocate native memory
+        final var strPtr = malloc(cStr.length());
+        // Copy Java String to native memory
+        memMove(strPtr, cStr.getBytes(), cStr.length());
+        return strPtr;
+    }
 }
