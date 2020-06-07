@@ -47,7 +47,7 @@ elif [ "$arch" = "i586" ] || [ "$arch" = "i686" ]; then
 	jdkurl="https://cdn.azul.com/zulu/bin/zulu11.39.15-ca-jdk11.0.7-linux_i686.tar.gz"
 # X86_64	
 elif [ "$arch" = "x86_64" ]; then
-    jdkurl="https://cdn.azul.com/zulu/bin/zulu11.39.15-ca-jdk11.0.7-linux_musl_x64.tar.gz"
+    jdkurl="https://cdn.azul.com/zulu/bin/zulu11.39.15-ca-jdk11.0.7-linux_x64.tar.gz"
 fi
 # Just JDK archive name
 jdkarchive=$(basename "$jdkurl")
@@ -72,7 +72,7 @@ filename="${jdkarchive%.*}"
 filename="${filename%.*}"
 sudo mkdir -p /usr/lib/jvm >> $logfile 2>&1
 log "Moving $tmpdir/$filename to $javahome"
-sudo -E mv "$tmpdir/$filename" "$javahome" >> $logfile 2>&1
+sudo mv "$tmpdir/$filename" "$javahome" >> $logfile 2>&1
 sudo -E update-alternatives --install "/usr/bin/java" "java" "$javahome/bin/java" 1 >> $logfile 2>&1
 sudo -E update-alternatives --install "/usr/bin/javac" "javac" "$javahome/bin/javac" 1 >> $logfile 2>&1
 sudo -E update-alternatives --install "/usr/bin/jar" "jar" "$javahome/bin/jar" 1 >> $logfile 2>&1
