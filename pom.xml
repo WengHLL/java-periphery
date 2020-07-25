@@ -216,6 +216,11 @@
                 <version>${hawtjni.version}</version>
                 <executions>
                     <execution>
+                        <configuration>
+                            <configureArgs>
+                                <arg>CFLAGS=-DPERIPHERY_GPIO_CDEV_SUPPORT</arg>
+                            </configureArgs>
+                        </configuration>                        
                         <goals>
                             <goal>generate</goal>
                             <goal>build</goal>
