@@ -217,6 +217,7 @@
                 <executions>
                     <execution>
                         <configuration>
+                            <!-- Compile for GPIO device, comment out for sysfs only -->
                             <configureArgs>
                                 <arg>CFLAGS=-DPERIPHERY_GPIO_CDEV_SUPPORT</arg>
                             </configureArgs>
