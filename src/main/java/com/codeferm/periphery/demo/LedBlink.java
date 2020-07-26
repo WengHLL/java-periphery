@@ -4,14 +4,12 @@
 package com.codeferm.periphery.demo;
 
 import static com.codeferm.periphery.Common.cString;
-import static com.codeferm.periphery.Common.free;
-import com.codeferm.periphery.Gpio;
 import static com.codeferm.periphery.Gpio.GPIO_BIAS_DEFAULT;
 import static com.codeferm.periphery.Gpio.GPIO_DIR_OUT;
 import static com.codeferm.periphery.Gpio.GPIO_DRIVE_DEFAULT;
 import static com.codeferm.periphery.Gpio.GPIO_EDGE_NONE;
-import static com.codeferm.periphery.Gpio.GPIO_SUCCESS;
 import com.codeferm.periphery.Gpio.GpioConfig;
+import com.codeferm.periphery.resource.GpioResource;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
@@ -67,33 +65,22 @@ public class LedBlink implements Callable<Integer> {
     @Override
     public Integer call() throws InterruptedException {
         var exitCode = 0;
-        // Set config object
-        final var config = new GpioConfig();
-        config.bias = GPIO_BIAS_DEFAULT;
-        config.direction = GPIO_DIR_OUT;
-        config.drive = GPIO_DRIVE_DEFAULT;
-        config.edge = GPIO_EDGE_NONE;
-        config.inverted = false;
-        final var labelPtr = cString(LedBlink.class.getSimpleName());
-        config.label = labelPtr;
-        final var handle = Gpio.gpioNew();
-        if (Gpio.gpioOpenAdvanced(handle, device, line, config) == GPIO_SUCCESS) {
+        try (final var gpio = new GpioResource(device, line, new GpioConfig().setBias(GPIO_BIAS_DEFAULT).setDirection(GPIO_DIR_OUT).
+                setDrive(GPIO_DRIVE_DEFAULT).setEdge(GPIO_EDGE_NONE).setInverted(false).setLabel(cString(LedBlink.class.
+                getSimpleName())))) {
             logger.info("Blinking LED");
             var i = 0;
             while (i < 10) {
-                Gpio.gpioWrite(handle, true);
+                GpioResource.gpioWrite(gpio.getHandle(), true);
                 TimeUnit.SECONDS.sleep(1);
-                Gpio.gpioWrite(handle, false);
+                GpioResource.gpioWrite(gpio.getHandle(), false);
                 TimeUnit.SECONDS.sleep(1);
                 i++;
             }
-            Gpio.gpioClose(handle);
-        } else {
-            exitCode = Gpio.gpioErrNo(handle);
-            logger.error(Gpio.gpioErrMessage(handle));
+        } catch (RuntimeException e) {
+            logger.error(e.getMessage());
+            exitCode = 1;
         }
-        Gpio.gpioFree(handle);
-        free(labelPtr);
         return exitCode;
     }
 }

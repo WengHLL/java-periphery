@@ -3,13 +3,12 @@
  */
 package com.codeferm.periphery.demo;
 
-import com.codeferm.periphery.Gpio;
 import static com.codeferm.periphery.Gpio.GPIO_DIR_IN;
 import static com.codeferm.periphery.Gpio.GPIO_EDGE_BOTH;
 import static com.codeferm.periphery.Gpio.GPIO_EDGE_FALLING;
 import static com.codeferm.periphery.Gpio.GPIO_EDGE_RISING;
 import static com.codeferm.periphery.Gpio.GPIO_POLL_EVENT;
-import static com.codeferm.periphery.Gpio.GPIO_SUCCESS;
+import com.codeferm.periphery.resource.GpioResource;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -66,16 +65,15 @@ public class ButtonWait implements Callable<Integer> {
     @Override
     public Integer call() {
         var exitCode = 0;
-        final var handle = Gpio.gpioNew();
-        if (Gpio.gpioOpen(handle, device, line, GPIO_DIR_IN) == GPIO_SUCCESS) {
+        try (final var gpio = new GpioResource(device, line, GPIO_DIR_IN)) {
             final var formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss");
             final var edge = new int[1];
             final var timestamp = new long[1];
-            Gpio.gpioSetEdge(handle, GPIO_EDGE_BOTH);
+            GpioResource.gpioSetEdge(gpio.getHandle(), GPIO_EDGE_BOTH);
             logger.info("Press button, stop pressing button for 10 seconds to exit");
             // Poll for event and timeout in 10 seconds if no event
-            while (Gpio.gpioPoll(handle, 10000) == GPIO_POLL_EVENT) {
-                Gpio.gpioReadEvent(handle, edge, timestamp);
+            while (GpioResource.gpioPoll(gpio.getHandle(), 10000) == GPIO_POLL_EVENT) {
+                GpioResource.gpioReadEvent(gpio.getHandle(), edge, timestamp);
                 final var date = LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp[0] / 1000000), ZoneId.systemDefault());
                 if (edge[0] == GPIO_EDGE_RISING) {
                     logger.info(String.format("Edge rising, %s", date.format(formatter)));
@@ -85,12 +83,10 @@ public class ButtonWait implements Callable<Integer> {
                     logger.info(String.format("Invalid edge %d, %s", edge[0], date.format(formatter)));
                 }
             }
-            Gpio.gpioClose(handle);
-        } else {
-            exitCode = Gpio.gpioErrNo(handle);
-            logger.error(Gpio.gpioErrMessage(handle));
+        } catch (RuntimeException e) {
+            logger.error(e.getMessage());
+            exitCode = 1;
         }
-        Gpio.gpioFree(handle);
         return exitCode;
     }
 }

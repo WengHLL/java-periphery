@@ -3,10 +3,9 @@
  */
 package com.codeferm.periphery.demo;
 
-import com.codeferm.periphery.Gpio;
 import static com.codeferm.periphery.Gpio.GPIO_DIR_IN;
 import static com.codeferm.periphery.Gpio.GPIO_DIR_OUT;
-import static com.codeferm.periphery.Gpio.GPIO_SUCCESS;
+import com.codeferm.periphery.resource.GpioResource;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.Callable;
@@ -65,44 +64,36 @@ public class GpioPerf implements Callable<Integer> {
     @Override
     public Integer call() throws InterruptedException {
         var exitCode = 0;
-        final var handle = Gpio.gpioNew();
         // Write test
-        if (Gpio.gpioOpen(handle, device, line, GPIO_DIR_OUT) == GPIO_SUCCESS) {
+        try (final var gpio = new GpioResource(device, line, GPIO_DIR_OUT)) {
+            var handle = gpio.getHandle();
             logger.info(String.format("Running write test with %d samples", samples));
             final var start = Instant.now();
             // Turn pin on and off, so we can see on a scope
             for (var i = 0; i < samples; i++) {
-                Gpio.gpioWrite(handle, true);
-                Gpio.gpioWrite(handle, false);
+                GpioResource.gpioWrite(handle, true);
+                GpioResource.gpioWrite(handle, false);
             }
             final var finish = Instant.now();
             // Elapsed milliseconds
             final var timeElapsed = Duration.between(start, finish).toMillis();
             logger.info(String.format("%.2f writes per second", ((double) samples / (double) timeElapsed) * 2000));
-            Gpio.gpioClose(handle);
-        } else {
-            exitCode = Gpio.gpioErrNo(handle);
-            logger.error(Gpio.gpioErrMessage(handle));
         }
         // Read test
-        if (Gpio.gpioOpen(handle, device, line, GPIO_DIR_IN) == GPIO_SUCCESS) {
+        try (final var gpio = new GpioResource(device, line, GPIO_DIR_IN)) {
+            var handle = gpio.getHandle();
             logger.info(String.format("Running read test with %d samples", samples));
             final var value = new boolean[1];
             final var start = Instant.now();
             // Read pin
             for (var i = 0; i < samples; i++) {
-                Gpio.gpioRead(handle, value);
+                GpioResource.gpioRead(handle, value);
             }
             final var finish = Instant.now();
             // Elapsed milliseconds
             final var timeElapsed = Duration.between(start, finish).toMillis();
             logger.info(String.format("%.2f reads per second", ((double) samples / (double) timeElapsed) * 1000));
-            Gpio.gpioClose(handle);
-        } else {
-            exitCode = Gpio.gpioErrNo(handle);
-            logger.error(Gpio.gpioErrMessage(handle));
         }
-        Gpio.gpioFree(handle);
         return exitCode;
     }
 }
