@@ -3,12 +3,12 @@
  */
 package com.codeferm.periphery.demo;
 
+import com.codeferm.periphery.Gpio;
 import static com.codeferm.periphery.Gpio.GPIO_DIR_IN;
 import static com.codeferm.periphery.Gpio.GPIO_EDGE_BOTH;
 import static com.codeferm.periphery.Gpio.GPIO_EDGE_FALLING;
 import static com.codeferm.periphery.Gpio.GPIO_EDGE_RISING;
 import static com.codeferm.periphery.Gpio.GPIO_POLL_EVENT;
-import com.codeferm.periphery.resource.GpioResource;
 import java.time.Instant;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
@@ -69,15 +69,15 @@ public class ButtonThread implements Callable<Integer> {
     public void submitWaitForEdge(final ExecutorService executor) {
         // Submit lambda
         executor.submit(() -> {
-            try (final var gpio = new GpioResource(device, line, GPIO_DIR_IN)) {
+            try (final var gpio = new Gpio(device, line, GPIO_DIR_IN)) {
                 final var formatter = DateTimeFormatter.ofPattern("MM/dd/yyyy HH:mm:ss");
                 final var edge = new int[1];
                 final var timestamp = new long[1];
-                GpioResource.gpioSetEdge(gpio.getHandle(), GPIO_EDGE_BOTH);
+                Gpio.gpioSetEdge(gpio.getHandle(), GPIO_EDGE_BOTH);
                 logger.info("Press button, stop pressing button for 10 seconds to exit");
                 // Poll for event and timeout in 10 seconds if no event
-                while (GpioResource.gpioPoll(gpio.getHandle(), 10000) == GPIO_POLL_EVENT) {
-                    GpioResource.gpioReadEvent(gpio.getHandle(), edge, timestamp);
+                while (Gpio.gpioPoll(gpio.getHandle(), 10000) == GPIO_POLL_EVENT) {
+                    Gpio.gpioReadEvent(gpio.getHandle(), edge, timestamp);
                     final var date = LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp[0] / 1000000), ZoneId.systemDefault());
                     if (edge[0] == GPIO_EDGE_RISING) {
                         logger.info(String.format("Edge rising, %s", date.format(formatter)));

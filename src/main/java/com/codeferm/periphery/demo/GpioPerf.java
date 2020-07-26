@@ -3,9 +3,9 @@
  */
 package com.codeferm.periphery.demo;
 
+import com.codeferm.periphery.Gpio;
 import static com.codeferm.periphery.Gpio.GPIO_DIR_IN;
 import static com.codeferm.periphery.Gpio.GPIO_DIR_OUT;
-import com.codeferm.periphery.resource.GpioResource;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.concurrent.Callable;
@@ -65,14 +65,14 @@ public class GpioPerf implements Callable<Integer> {
     public Integer call() throws InterruptedException {
         var exitCode = 0;
         // Write test
-        try (final var gpio = new GpioResource(device, line, GPIO_DIR_OUT)) {
+        try (final var gpio = new Gpio(device, line, GPIO_DIR_OUT)) {
             var handle = gpio.getHandle();
             logger.info(String.format("Running write test with %d samples", samples));
             final var start = Instant.now();
             // Turn pin on and off, so we can see on a scope
             for (var i = 0; i < samples; i++) {
-                GpioResource.gpioWrite(handle, true);
-                GpioResource.gpioWrite(handle, false);
+                Gpio.gpioWrite(handle, true);
+                Gpio.gpioWrite(handle, false);
             }
             final var finish = Instant.now();
             // Elapsed milliseconds
@@ -80,14 +80,14 @@ public class GpioPerf implements Callable<Integer> {
             logger.info(String.format("%.2f writes per second", ((double) samples / (double) timeElapsed) * 2000));
         }
         // Read test
-        try (final var gpio = new GpioResource(device, line, GPIO_DIR_IN)) {
+        try (final var gpio = new Gpio(device, line, GPIO_DIR_IN)) {
             var handle = gpio.getHandle();
             logger.info(String.format("Running read test with %d samples", samples));
             final var value = new boolean[1];
             final var start = Instant.now();
             // Read pin
             for (var i = 0; i < samples; i++) {
-                GpioResource.gpioRead(handle, value);
+                Gpio.gpioRead(handle, value);
             }
             final var finish = Instant.now();
             // Elapsed milliseconds

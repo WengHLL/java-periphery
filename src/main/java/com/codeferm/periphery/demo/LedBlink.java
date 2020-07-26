@@ -4,12 +4,12 @@
 package com.codeferm.periphery.demo;
 
 import static com.codeferm.periphery.Common.cString;
+import com.codeferm.periphery.Gpio;
 import static com.codeferm.periphery.Gpio.GPIO_BIAS_DEFAULT;
 import static com.codeferm.periphery.Gpio.GPIO_DIR_OUT;
 import static com.codeferm.periphery.Gpio.GPIO_DRIVE_DEFAULT;
 import static com.codeferm.periphery.Gpio.GPIO_EDGE_NONE;
 import com.codeferm.periphery.Gpio.GpioConfig;
-import com.codeferm.periphery.resource.GpioResource;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
@@ -65,15 +65,15 @@ public class LedBlink implements Callable<Integer> {
     @Override
     public Integer call() throws InterruptedException {
         var exitCode = 0;
-        try (final var gpio = new GpioResource(device, line, new GpioConfig().setBias(GPIO_BIAS_DEFAULT).setDirection(GPIO_DIR_OUT).
+        try (final var gpio = new Gpio(device, line, new GpioConfig().setBias(GPIO_BIAS_DEFAULT).setDirection(GPIO_DIR_OUT).
                 setDrive(GPIO_DRIVE_DEFAULT).setEdge(GPIO_EDGE_NONE).setInverted(false).setLabel(cString(LedBlink.class.
                 getSimpleName())))) {
             logger.info("Blinking LED");
             var i = 0;
             while (i < 10) {
-                GpioResource.gpioWrite(gpio.getHandle(), true);
+                Gpio.gpioWrite(gpio.getHandle(), true);
                 TimeUnit.SECONDS.sleep(1);
-                GpioResource.gpioWrite(gpio.getHandle(), false);
+                Gpio.gpioWrite(gpio.getHandle(), false);
                 TimeUnit.SECONDS.sleep(1);
                 i++;
             }
