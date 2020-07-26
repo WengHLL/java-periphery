@@ -119,7 +119,7 @@ public class Gpio {
     public static int GPIO_DRIVE_OPEN_SOURCE;
 
     /**
-     * gpio_config struct as Java object.
+     * gpio_config struct as Java object. Allow fluent style to set members.
      */
     @JniClass(name = "gpio_config_t", flags = {ClassFlag.STRUCT, ClassFlag.TYPEDEF})
     public static class GpioConfig {
@@ -132,13 +132,75 @@ public class Gpio {
         @JniMethod(flags = {CONSTANT_INITIALIZER})
         private static native void init();
         @JniField(flags = {CONSTANT}, accessor = "sizeof(gpio_config_t)")
-        public static int SIZEOF;
-        public int direction;
-        public int edge;
-        public int bias;
-        public int drive;
-        public boolean inverted;
-        public long label;
+        private static int SIZEOF;
+        private int direction;
+        private int edge;
+        private int bias;
+        private int drive;
+        private boolean inverted;
+        private long label;
+
+        public static int getSIZEOF() {
+            return SIZEOF;
+        }
+
+        public static void setSIZEOF(int SIZEOF) {
+            GpioConfig.SIZEOF = SIZEOF;
+        }
+
+        public int getDirection() {
+            return direction;
+        }
+
+        public GpioConfig setDirection(int direction) {
+            this.direction = direction;
+            return this;
+        }
+
+        public int getEdge() {
+            return edge;
+        }
+
+        public GpioConfig setEdge(int edge) {
+            this.edge = edge;
+            return this;
+        }
+
+        public int getBias() {
+            return bias;
+        }
+
+        public GpioConfig setBias(int bias) {
+            this.bias = bias;
+            return this;
+        }
+
+        public int getDrive() {
+            return drive;
+        }
+
+        public GpioConfig setDrive(int drive) {
+            this.drive = drive;
+            return this;
+        }
+
+        public boolean isInverted() {
+            return inverted;
+        }
+
+        public GpioConfig setInverted(boolean inverted) {
+            this.inverted = inverted;
+            return this;
+        }
+
+        public long getLabel() {
+            return label;
+        }
+
+        public GpioConfig setLabel(long label) {
+            this.label = label;
+            return this;
+        }
     }
 
     /**
