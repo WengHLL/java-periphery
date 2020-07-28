@@ -12,6 +12,21 @@ This gets attached to the Maven project as as the native source zip file.
 * Builds the native source tar for the current platform.
 * Built native library is stored in a platform specific jar. This gets attached
 to the Maven project as a platform specific jar file.
+* All wrapper classes support AutoCloseable, so you can use
+[try-with-resources](https://docs.oracle.com/javase/tutorial/essential/exceptions/tryResourceClose.html)
+statement to automatically close and free native resources. This prevents hard
+to track down native memory leaks.
+```
+try (final var spi = new Spi("/dev/spidev1.0", 0, 500000)) {
+    final var txBuf = new byte[128];
+    // Change some data at beginning and end.
+    txBuf[0] = (byte) 0xff;
+    txBuf[127] = (byte) 0x80;
+    final var rxBuf = new byte[128];
+    Spi.spiTransfer(spi.getHandle(), txBuf, rxBuf, txBuf.length);
+    logger.info(String.format("%02X, %02X", (short) rxBuf[0] & 0xff, (short) rxBuf[127] & 0xff));
+}
+```
 
 ![Title](images/duo.png)
 
@@ -23,9 +38,9 @@ bindings. The idea is to have consistent APIs across
 [C](https://github.com/vsergeev/c-periphery),
 [Python](https://github.com/vsergeev/python-periphery),
 [Lua](https://github.com/vsergeev/lua-periphery) and JVM languages without having
-to use hacked up RPi.GPIO or Wiring Pi implementations for each distinct SBC
-model. The possibility of using other JVM based languages such as Groovy, Kotlin,
-Scala, etc. opens up language opportunities that do not currently exist in the
+to use board specific drivers or the deprecated sysfs interface for GPIO. The
+possibility of using other JVM based languages such as Groovy, Kotlin, Scala,
+etc. opens up language opportunities that do not currently exist in the
 IoT space.
 * Why Linux userspace? This is really the only way to get cross platform
 libraries to work since most SBCs have different chip sets. The trade off is
