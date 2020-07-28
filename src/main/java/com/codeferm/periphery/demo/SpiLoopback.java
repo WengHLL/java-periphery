@@ -4,7 +4,6 @@
 package com.codeferm.periphery.demo;
 
 import com.codeferm.periphery.Spi;
-import static com.codeferm.periphery.Spi.SPI_SUCCESS;
 import java.util.concurrent.Callable;
 import org.apache.logging.log4j.LogManager;
 import picocli.CommandLine;
@@ -53,21 +52,18 @@ public class SpiLoopback implements Callable<Integer> {
     @Override
     public Integer call() throws InterruptedException {
         var exitCode = 0;
-        final var handle = Spi.spiNew();
-        if (Spi.spiOpen(handle, device, 0, 500000) == SPI_SUCCESS) {
+        try (final var spi = new Spi(device, 0, 500000)) {
             final var txBuf = new byte[128];
             // Change some data at beginning and end.
             txBuf[0] = (byte) 0xff;
             txBuf[127] = (byte) 0x80;
             final var rxBuf = new byte[128];
-            Spi.spiTransfer(handle, txBuf, rxBuf, txBuf.length);
+            Spi.spiTransfer(spi.getHandle(), txBuf, rxBuf, txBuf.length);
             logger.info(String.format("%02X, %02X", (short) rxBuf[0] & 0xff, (short) rxBuf[127] & 0xff));
-            Spi.spiClose(handle);
-        } else {
-            exitCode = Spi.spiErrNo(handle);
-            logger.error(Spi.spiErrMessage(handle));
+        } catch (RuntimeException e) {
+            logger.error(e.getMessage());
+            exitCode = 1;
         }
-        Spi.spiFree(handle);
         return exitCode;
     }
 }

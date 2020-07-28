@@ -4,7 +4,6 @@
 package com.codeferm.periphery.demo;
 
 import com.codeferm.periphery.Led;
-import static com.codeferm.periphery.Led.LED_SUCCESS;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
@@ -31,7 +30,7 @@ public class SysLedBlink implements Callable<Integer> {
      * Device option.
      */
     @Option(names = {"-n", "--name"}, description = "System LED defaults to nanopi:green:pwr")
-    private String ledName = "nanopi:green:pwr";
+    private String name = "nanopi:green:pwr";
 
     /**
      * Main parsing, error handling and handling user requests for usage help or version help are done with one line of code.
@@ -52,28 +51,25 @@ public class SysLedBlink implements Callable<Integer> {
     @Override
     public Integer call() throws InterruptedException {
         var exitCode = 0;
-        final var handle = Led.ledNew();
-        if (Led.ledOpen(handle, ledName) == LED_SUCCESS) {
+        try (final var led = new Led(name)) {
             var value = new boolean[1];
             // Get current value
-            Led.ledRead(handle, value);
+            Led.ledRead(led.getHandle(), value);
             logger.info("Blinking LED");
             var i = 0;
             while (i < 10) {
-                Led.ledWrite(handle, true);
+                Led.ledWrite(led.getHandle(), true);
                 TimeUnit.SECONDS.sleep(1);
-                Led.ledWrite(handle, false);
+                Led.ledWrite(led.getHandle(), false);
                 TimeUnit.SECONDS.sleep(1);
                 i++;
             }
             // Restore led value
-            Led.ledWrite(handle, value[0]);
-            Led.ledClose(handle);
-        } else {
-            exitCode = Led.ledErrNo(handle);
-            logger.error(Led.ledErrMessage(handle));
+            Led.ledWrite(led.getHandle(), value[0]);
+        } catch (RuntimeException e) {
+            logger.error(e.getMessage());
+            exitCode = 1;
         }
-        Led.ledFree(handle);
         return exitCode;
     }
 }

@@ -24,7 +24,7 @@ import static org.fusesource.hawtjni.runtime.MethodFlag.CONSTANT_INITIALIZER;
  * @since 1.0.0
  */
 @JniClass
-public class I2c {
+public class I2c implements AutoCloseable {
 
     /**
      * Function was successful.
@@ -45,6 +45,10 @@ public class I2c {
      * java-periphery library.
      */
     private static final Library LIBRARY = new Library("java-periphery", I2c.class);
+    /**
+     * I2C handle.
+     */
+    final private long handle;
 
     /**
      * Load library.
@@ -94,6 +98,43 @@ public class I2c {
         public short flags;
         public short len;
         public long buf;
+    }
+
+    /**
+     * Open the i2c-dev device at the specified path (e.g. "/dev/i2c-1").
+     *
+     * @param path Device path.
+     */
+    public I2c(final String path) {
+        // Allocate handle
+        handle = i2cNew();
+        if (handle == 0) {
+            throw new RuntimeException("Handle cannot be NULL");
+        }
+        // Open device
+        if (i2cOpen(handle, path) != I2C_SUCCESS) {
+            // Free handle before throwing exception
+            i2cFree(handle);
+            throw new RuntimeException(i2cErrMessage(handle));
+        }
+    }
+
+    /**
+     * Close and free handle.
+     */
+    @Override
+    public void close() {
+        i2cClose(handle);
+        i2cFree(handle);
+    }
+
+    /**
+     * Handle accessor.
+     *
+     * @return Handle.
+     */
+    public long getHandle() {
+        return handle;
     }
 
     /**

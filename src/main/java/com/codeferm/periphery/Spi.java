@@ -21,7 +21,7 @@ import static org.fusesource.hawtjni.runtime.MethodFlag.CONSTANT_INITIALIZER;
  * @since 1.0.0
  */
 @JniClass
-public class Spi {
+public class Spi implements AutoCloseable {
 
     /**
      * Function was successful.
@@ -31,6 +31,10 @@ public class Spi {
      * java-periphery library.
      */
     private static final Library LIBRARY = new Library("java-periphery", Spi.class);
+    /**
+     * SPI handle.
+     */
+    final private long handle;
 
     /**
      * Load library.
@@ -67,6 +71,75 @@ public class Spi {
     public static int MSB_FIRST;
     @JniField(flags = {CONSTANT})
     public static int LSB_FIRST;
+
+    /**
+     * Open the spidev device at the specified path (e.g. "/dev/spidev1.0"), with the specified SPI mode, specified max speed in
+     * hertz, and the defaults of MSB_FIRST bit order, and 8 bits per word.
+     *
+     * @param path spidev path.
+     * @param mode Mode can be 0, 1, 2, or 3.
+     * @param maxSpeed Max speed in hertz.
+     */
+    public Spi(final String path, final int mode, final int maxSpeed) {
+        // Allocate handle
+        handle = spiNew();
+        if (handle == 0) {
+            throw new RuntimeException("Handle cannot be NULL");
+        }
+        // Open device
+        if (spiOpen(handle, path, mode, maxSpeed) != SPI_SUCCESS) {
+            // Free handle before throwing exception
+            spiFree(handle);
+            throw new RuntimeException(spiErrMessage(handle));
+        }
+    }
+
+    /**
+     * Open the spidev device at the specified path, with the specified SPI mode, max speed in hertz, bit order, bits per word, and
+     * extra flags.
+     *
+     * SPI mode can be 0, 1, 2, or 3. Bit order can be MSB_FIRST or LSB_FIRST, as defined above. Bits per word specifies the
+     * transfer word size. Extra flags specified additional flags bitwise-ORed with the SPI mode.
+     *
+     * @param path spidev path.
+     * @param mode Mode can be 0, 1, 2, or 3.
+     * @param maxSpeed Max speed in hertz.
+     * @param bitOrder Bit order can be MSB_FIRST or LSB_FIRST.
+     * @param bitsPerWord Transfer word size.
+     * @param extraFlags Additional flags bitwise-ORed with the SPI mode.
+     */
+    public Spi(final String path, final int mode, final int maxSpeed, final int bitOrder, final byte bitsPerWord,
+            final byte extraFlags) {
+        // Allocate handle
+        handle = spiNew();
+        if (handle == 0) {
+            throw new RuntimeException("Handle cannot be NULL");
+        }
+        // Open device
+        if (spiOpenAdvanced(handle, path, mode, maxSpeed, bitOrder, bitsPerWord, extraFlags) != SPI_SUCCESS) {
+            // Free handle before throwing exception
+            spiFree(handle);
+            throw new RuntimeException(spiErrMessage(handle));
+        }
+    }
+
+    /**
+     * Close and free handle.
+     */
+    @Override
+    public void close() {
+        spiClose(handle);
+        spiFree(handle);
+    }
+
+    /**
+     * Handle accessor.
+     *
+     * @return Handle.
+     */
+    public long getHandle() {
+        return handle;
+    }
 
     /**
      * Allocate an SPI handle.
@@ -240,6 +313,7 @@ public class Spi {
 
     /**
      * Return the file descriptor (for the underlying spidev device) of the SPI handle.
+     *
      * @param spi A valid pointer to an allocated SPI handle structure.
      * @return File descriptor (for the underlying spidev device) of the SPI handle.
      */

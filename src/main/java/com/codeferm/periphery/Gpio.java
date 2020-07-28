@@ -24,15 +24,6 @@ import static org.fusesource.hawtjni.runtime.MethodFlag.CONSTANT_INITIALIZER;
  */
 @JniClass
 public class Gpio implements AutoCloseable {
-    
-    /**
-     * GPIO handle.
-     */
-    final private long handle;
-    /**
-     * Gpio config struct.
-     */
-    final private GpioConfig config;    
 
     /**
      * gpioPoll returned event.
@@ -50,6 +41,14 @@ public class Gpio implements AutoCloseable {
      * java-periphery library.
      */
     private static final Library LIBRARY = new Library("java-periphery", Gpio.class);
+    /**
+     * GPIO handle.
+     */
+    final private long handle;
+    /**
+     * Gpio config struct.
+     */
+    final private GpioConfig config;
 
     /**
      * Load library.
@@ -162,7 +161,7 @@ public class Gpio implements AutoCloseable {
             return direction;
         }
 
-        public GpioConfig setDirection(int direction) {
+        public GpioConfig setDirection(final int direction) {
             this.direction = direction;
             return this;
         }
@@ -171,7 +170,7 @@ public class Gpio implements AutoCloseable {
             return edge;
         }
 
-        public GpioConfig setEdge(int edge) {
+        public GpioConfig setEdge(final int edge) {
             this.edge = edge;
             return this;
         }
@@ -180,7 +179,7 @@ public class Gpio implements AutoCloseable {
             return bias;
         }
 
-        public GpioConfig setBias(int bias) {
+        public GpioConfig setBias(final int bias) {
             this.bias = bias;
             return this;
         }
@@ -189,7 +188,7 @@ public class Gpio implements AutoCloseable {
             return drive;
         }
 
-        public GpioConfig setDrive(int drive) {
+        public GpioConfig setDrive(final int drive) {
             this.drive = drive;
             return this;
         }
@@ -198,7 +197,7 @@ public class Gpio implements AutoCloseable {
             return inverted;
         }
 
-        public GpioConfig setInverted(boolean inverted) {
+        public GpioConfig setInverted(final boolean inverted) {
             this.inverted = inverted;
             return this;
         }
@@ -207,12 +206,12 @@ public class Gpio implements AutoCloseable {
             return label;
         }
 
-        public GpioConfig setLabel(long label) {
+        public GpioConfig setLabel(final long label) {
             this.label = label;
             return this;
         }
     }
-    
+
     /**
      * Open the character device GPIO with the specified GPIO line and direction at the specified character device GPIO chip path.
      *
@@ -244,7 +243,7 @@ public class Gpio implements AutoCloseable {
      * @param name GPIO line name.
      * @param direction One of the direction values.
      */
-    public Gpio(final String path, String name, int direction) {
+    public Gpio(final String path, final String name, final int direction) {
         // Config not used
         config = null;
         // Allocate handle
@@ -343,9 +342,9 @@ public class Gpio implements AutoCloseable {
             throw new RuntimeException(gpioErrMessage(handle));
         }
     }
-    
+
     /**
-     * Close handle and free line label if allocated.
+     * Close handle, free handle and free line label if allocated.
      */
     @Override
     public void close() {
@@ -375,7 +374,7 @@ public class Gpio implements AutoCloseable {
      */
     public GpioConfig getConfig() {
         return config;
-    }    
+    }
 
     /**
      * Allocate a GPIO handle. Returns a valid handle on success, or NULL on failure.

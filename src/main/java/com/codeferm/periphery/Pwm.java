@@ -21,7 +21,7 @@ import static org.fusesource.hawtjni.runtime.MethodFlag.CONSTANT_INITIALIZER;
  * @since 1.0.0
  */
 @JniClass
-public class Pwm {
+public class Pwm implements AutoCloseable {
 
     /**
      * Function was successful.
@@ -31,6 +31,10 @@ public class Pwm {
      * java-periphery library.
      */
     private static final Library LIBRARY = new Library("java-periphery", Pwm.class);
+    /**
+     * PWM handle.
+     */
+    final private long handle;
 
     /**
      * Load library.
@@ -65,6 +69,44 @@ public class Pwm {
     public static int PWM_POLARITY_NORMAL;
     @JniField(flags = {CONSTANT})
     public static int PWM_POLARITY_INVERSED;
+
+    /**
+     * Open the sysfs PWM with the specified chip and channel.
+     *
+     * @param chip PWM chip.
+     * @param channel PWM channel.
+     */
+    public Pwm(final int chip, final int channel) {
+        // Allocate handle
+        handle = pwmNew();
+        if (handle == 0) {
+            throw new RuntimeException("Handle cannot be NULL");
+        }
+        // Open device
+        if (pwmOpen(handle, chip, channel) != PWM_SUCCESS) {
+            // Free handle before throwing exception
+            pwmFree(handle);
+            throw new RuntimeException(pwmErrMessage(handle));
+        }
+    }
+
+    /**
+     * Close and free handle.
+     */
+    @Override
+    public void close() {
+        pwmClose(handle);
+        pwmFree(handle);
+    }
+    
+    /**
+     * Handle accessor.
+     *
+     * @return Handle.
+     */
+    public long getHandle() {
+        return handle;
+    }    
 
     /**
      * Allocate an PWM handle.

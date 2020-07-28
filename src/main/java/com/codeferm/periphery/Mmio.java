@@ -21,7 +21,7 @@ import static org.fusesource.hawtjni.runtime.MethodFlag.CONSTANT_INITIALIZER;
  * @since 1.0.0
  */
 @JniClass
-public class Mmio {
+public class Mmio implements AutoCloseable {
 
     /**
      * Function was successful.
@@ -31,6 +31,10 @@ public class Mmio {
      * java-periphery library.
      */
     private static final Library LIBRARY = new Library("java-periphery", Mmio.class);
+    /**
+     * MMIO handle.
+     */
+    final private long handle;
 
     /**
      * Load library.
@@ -54,6 +58,44 @@ public class Mmio {
     public static int MMIO_ERROR_OPEN;
     @JniField(flags = {CONSTANT})
     public static int MMIO_ERROR_CLOSE;
+
+    /**
+     * Map the region of physical memory at the specified base address with the specified size.
+     *
+     * @param base Doesn't need be aligned to a page boundary.
+     * @param size Doesn't need be aligned to a page boundary.
+     */
+    public Mmio(final long base, final long size) {
+        // Allocate handle
+        handle = mmioNew();
+        if (handle == 0) {
+            throw new RuntimeException("Handle cannot be NULL");
+        }
+        // Open device
+        if (mmioOpen(handle, base, size) != MMIO_SUCCESS) {
+            // Free handle before throwing exception
+            mmioFree(handle);
+            throw new RuntimeException(mmioErrMessage(handle));
+        }
+    }
+
+    /**
+     * Close and free handle.
+     */
+    @Override
+    public void close() {
+        mmioClose(handle);
+        mmioFree(handle);
+    }
+    
+    /**
+     * Handle accessor.
+     *
+     * @return Handle.
+     */
+    public long getHandle() {
+        return handle;
+    }
 
     /**
      * Allocate a MMIO handle. Returns a valid handle on success, or NULL on failure.
@@ -206,8 +248,7 @@ public class Mmio {
      */
     @JniMethod(accessor = "mmio_base")
     public static final native long mmioBase(long mmio);
-    
-    
+
     /**
      * Return the base address the MMIO handle was opened with.
      *
@@ -216,7 +257,7 @@ public class Mmio {
      */
     @JniMethod(accessor = "mmio_size")
     public static final native long mmioSize(long mmio);
-    
+
     /**
      *
      * Return a string representation of the MMIO handle.
@@ -273,6 +314,6 @@ public class Mmio {
         var str = new byte[MAX_CHAR_ARRAY_LEN];
         memMove(str, ptr, str.length);
         return jString(str);
-    }    
+    }
 
 }

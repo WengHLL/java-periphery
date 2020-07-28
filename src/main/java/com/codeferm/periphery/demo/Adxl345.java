@@ -4,7 +4,6 @@
 package com.codeferm.periphery.demo;
 
 import com.codeferm.periphery.I2c;
-import static com.codeferm.periphery.I2c.I2C_SUCCESS;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
@@ -274,25 +273,24 @@ public class Adxl345 implements Callable<Integer> {
     @Override
     public Integer call() throws InterruptedException {
         var exitCode = 0;
-        final var handle = I2c.i2cNew();
-        if (I2c.i2cOpen(handle, device) == I2C_SUCCESS) {
+        try (final var i2c = new I2c(device)) {
             // Check device ID
             final var buf = new short[1];
-            I2c.i2cReadReg(handle, address, (short) 0x00, buf);
+            I2c.i2cReadReg(i2c.getHandle(), address, (short) 0x00, buf);
             if (buf[0] == 0xe5) {
                 // Enable the accelerometer
-                I2c.i2cWriteReg(handle, address, (short) 0x2d, (short) 0x08);
+                I2c.i2cWriteReg(i2c.getHandle(), address, (short) 0x2d, (short) 0x08);
                 // +/- 2g
-                setRange(handle, address, (short) 0x00);
+                setRange(i2c.getHandle(), address, (short) 0x00);
                 // 100 Hz
-                setDataRate(handle, address, (short) 0x0a);
+                setDataRate(i2c.getHandle(), address, (short) 0x0a);
                 // Save off range and data rate
-                final var range = getRange(handle, address);
-                final var dataRate = getDataRate(handle, address);
-                final var scalingFactor = getScalingFactor(range, getFullResolution(handle, address));
+                final var range = getRange(i2c.getHandle(), address);
+                final var dataRate = getDataRate(i2c.getHandle(), address);
+                final var scalingFactor = getScalingFactor(range, getFullResolution(i2c.getHandle(), address));
                 logger.info(String.format("Range = %d, data rate = %d, scaling factor = %f", range, dataRate, scalingFactor));
                 for (var i = 0; i < 100; i++) {
-                    final var data = read(handle, address);
+                    final var data = read(i2c.getHandle(), address);
                     logger.info(String.format("x: %+5.2f, y: %+5.2f, z: %+5.2f", scaling(data.get("x"), scalingFactor), scaling(
                             data.get("y"), scalingFactor), scaling(data.get("z"), scalingFactor)));
                     TimeUnit.MILLISECONDS.sleep(500);
@@ -300,12 +298,10 @@ public class Adxl345 implements Callable<Integer> {
             } else {
                 logger.error("Not ADXL345?");
             }
-            I2c.i2cClose(handle);
-        } else {
-            exitCode = I2c.i2cErrNo(handle);
-            logger.error(I2c.i2cErrMessage(handle));
+        } catch (RuntimeException e) {
+            logger.error(e.getMessage());
+            exitCode = 1;
         }
-        I2c.i2cFree(handle);
         return exitCode;
     }
 }

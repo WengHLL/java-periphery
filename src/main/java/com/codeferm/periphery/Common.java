@@ -82,7 +82,7 @@ public class Common {
      * @param str 0 terminated character array.
      * @return Java String.
      */
-    public static String jString(byte[] str) {
+    public static String jString(final byte[] str) {
         var i = 0;
         // Find 0 terminator
         while (i < str.length && str[i] != 0) {
@@ -97,7 +97,7 @@ public class Common {
      * @param str Java String.
      * @return Pointer to C style string.
      */
-    public static long cString(String str) {
+    public static long cString(final String str) {
         // Add null terminator
         final var cStr = str + "\0";
         // Allocate native memory

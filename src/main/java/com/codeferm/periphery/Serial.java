@@ -21,7 +21,7 @@ import static org.fusesource.hawtjni.runtime.MethodFlag.CONSTANT_INITIALIZER;
  * @since 1.0.0
  */
 @JniClass
-public class Serial {
+public class Serial implements AutoCloseable {
 
     /**
      * Function was successful.
@@ -31,6 +31,10 @@ public class Serial {
      * java-periphery library.
      */
     private static final Library LIBRARY = new Library("java-periphery", Serial.class);
+    /**
+     * Serial handle.
+     */
+    final private long handle;
 
     /**
      * Load library.
@@ -69,6 +73,45 @@ public class Serial {
     public static int PARITY_ODD;
     @JniField(flags = {CONSTANT})
     public static int PARITY_EVEN;
+
+    /**
+     * Open the tty device at the specified path (e.g. "/dev/ttyUSB0"), with the specified baudrate, and the defaults of 8 data
+     * bits, no parity, 1 stop bit, software flow control (xonxoff) off, hardware flow control (rtscts) off.
+     *
+     * @param path Serial device path.
+     * @param baudrate Baud rate.
+     */
+    public Serial(final String path, final int baudrate) {
+        // Allocate handle
+        handle = serialNew();
+        if (handle == 0) {
+            throw new RuntimeException("Handle cannot be NULL");
+        }
+        // Open device
+        if (serialOpen(handle, path, baudrate) != SERIAL_SUCCESS) {
+            // Free handle before throwing exception
+            serialFree(handle);
+            throw new RuntimeException(serialErrMessage(handle));
+        }
+    }
+
+    /**
+     * Close and free handle.
+     */
+    @Override
+    public void close() {
+        serialClose(handle);
+        serialFree(handle);
+    }
+    
+    /**
+     * Handle accessor.
+     *
+     * @return Handle.
+     */
+    public long getHandle() {
+        return handle;
+    }
 
     /**
      * Allocate a Serial handle. Returns a valid handle on success, or NULL on failure.

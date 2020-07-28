@@ -4,7 +4,6 @@
 package com.codeferm.periphery.demo;
 
 import com.codeferm.periphery.Pwm;
-import static com.codeferm.periphery.Pwm.PWM_SUCCESS;
 import java.util.concurrent.Callable;
 import java.util.concurrent.TimeUnit;
 import org.apache.logging.log4j.LogManager;
@@ -50,7 +49,7 @@ public class LedFlash implements Callable<Integer> {
 
     /**
      * Gradually increase and decrease LED brightness.
-     * 
+     *
      * @param handle Valid pointer to an allocated LED handle structure.
      * @param period Set the period in seconds of the PWM.
      * @param startDc Starting duty cycle in nanoseconds.
@@ -81,23 +80,20 @@ public class LedFlash implements Callable<Integer> {
     @Override
     public Integer call() throws InterruptedException {
         var exitCode = 0;
-        final var handle = Pwm.pwmNew();
-        if (Pwm.pwmOpen(handle, chip, channel) == PWM_SUCCESS) {
+        try (final var pwm = new Pwm(chip, channel)) {
             logger.info("Flash LED");
-            Pwm.pwmEnable(handle);
+            Pwm.pwmEnable(pwm.getHandle());
             for (var i = 0; i < 10; i++) {
-                changeBrightness(handle, 1000, 0, 10, 100, 5000);
-                changeBrightness(handle, 1000, 1000, -10, 100, 5000);
+                changeBrightness(pwm.getHandle(), 1000, 0, 10, 100, 5000);
+                changeBrightness(pwm.getHandle(), 1000, 1000, -10, 100, 5000);
             }
-            Pwm.pwmSetDutyCycleNs(handle, 0);
-            Pwm.pwmSetPeriod(handle, 0);
-            Pwm.pwmDisable(handle);
-            Pwm.pwmClose(handle);
-        } else {
-            exitCode = Pwm.pwmErrNo(handle);
-            logger.error(Pwm.pwmErrMessage(handle));
+            Pwm.pwmSetDutyCycleNs(pwm.getHandle(), 0);
+            Pwm.pwmSetPeriod(pwm.getHandle(), 0);
+            Pwm.pwmDisable(pwm.getHandle());
+        } catch (RuntimeException e) {
+            logger.error(e.getMessage());
+            exitCode = 1;
         }
-        Pwm.pwmFree(handle);
         return exitCode;
     }
 }

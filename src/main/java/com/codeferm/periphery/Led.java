@@ -21,7 +21,7 @@ import static org.fusesource.hawtjni.runtime.MethodFlag.CONSTANT_INITIALIZER;
  * @since 1.0.0
  */
 @JniClass
-public class Led {
+public class Led implements AutoCloseable {
 
     /**
      * Function was successful.
@@ -31,6 +31,10 @@ public class Led {
      * java-periphery library.
      */
     private static final Library LIBRARY = new Library("java-periphery", Led.class);
+    /**
+     * LED handle.
+     */
+    final private long handle;
 
     /**
      * Load library.
@@ -58,6 +62,43 @@ public class Led {
     public static int LED_ERROR_IO;
     @JniField(flags = {CONSTANT})
     public static int LED_ERROR_CLOSE;
+
+    /**
+     * Open the sysfs LED with the specified name.
+     *
+     * @param name Led name.
+     */
+    public Led(final String name) {
+        // Allocate handle
+        handle = ledNew();
+        if (handle == 0) {
+            throw new RuntimeException("Handle cannot be NULL");
+        }
+        // Open device
+        if (ledOpen(handle, name) != LED_SUCCESS) {
+            // Free handle before throwing exception
+            ledFree(handle);
+            throw new RuntimeException(ledErrMessage(handle));
+        }
+    }
+
+    /**
+     * Close and free handle.
+     */
+    @Override
+    public void close() {
+        ledClose(handle);
+        ledFree(handle);
+    }
+    
+    /**
+     * Handle accessor.
+     *
+     * @return Handle.
+     */
+    public long getHandle() {
+        return handle;
+    }
 
     /**
      * Allocate an LED handle.
