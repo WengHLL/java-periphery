@@ -12,7 +12,7 @@ This gets attached to the Maven project as as the native source zip file.
 * Builds the native source tar for the current platform.
 * Built native library is stored in a platform specific jar. This gets attached
 to the Maven project as a platform specific jar file.
-* All wrapper classes support AutoCloseable, so you can use
+* All wrapper classes support AutoCloseable, so you can use the
 [try-with-resources](https://docs.oracle.com/javase/tutorial/essential/exceptions/tryResourceClose.html)
 statement to automatically close and free native resources. This prevents hard
 to track down native memory leaks.
