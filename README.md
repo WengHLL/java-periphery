@@ -188,10 +188,10 @@ banging to simulate a protocol, so you need extra CPU bandwidth to do that.
 
 |SBC              |OS           |CPU Freq|Write KHz|Read KHz|Average CPU|
 | --------------- | ----------- | ------ | ------- | ------ | --------- |
-|Odroid XU4       |Armbian Focal|2.0 MHz |192      |195     |14%        |
-|Nano Pi Duo v1.0 |Armbian Focal|1.0 MHz |500      |318     |27%        |
-|Nano Pi Neo Plus2|Armbian Focal|1.0 MHz |654      |413     |27%        |
-|Odroid C2        |Armbian Focal|1.5 MHz |689      |488     |29%        |
+|Odroid XU4       |Armbian Focal|2.0 GHz |192      |195     |14%        |
+|Nano Pi Duo v1.0 |Armbian Focal|1.0 GHz |500      |318     |27%        |
+|Nano Pi Neo Plus2|Armbian Focal|1.0 GHz |654      |413     |27%        |
+|Odroid C2        |Armbian Focal|1.5 GHz |689      |488     |29%        |
 
 ## Zulu Mission Control
 [Zulu Mission Control](https://docs.azul.com/zmc/ZMCUserGuide/Title.htm) allows
