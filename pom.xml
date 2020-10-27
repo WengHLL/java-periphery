@@ -31,7 +31,7 @@
                         <path>
                             <groupId>info.picocli</groupId>
                             <artifactId>picocli-codegen</artifactId>
-                            <version>4.5.1</version>
+                            <version>4.5.2</version>
                         </path>
                     </annotationProcessorPaths>
                     <compilerArgs>
@@ -304,7 +304,7 @@
         <dependency>
             <groupId>info.picocli</groupId>
             <artifactId>picocli</artifactId>
-            <version>4.5.1</version>
+            <version>4.5.2</version>
         </dependency>        
         <dependency>
             <groupId>org.apache.logging.log4j</groupId>
