@@ -10,7 +10,10 @@ import static com.codeferm.periphery.Gpio.GPIO_DIR_OUT;
 import static com.codeferm.periphery.Gpio.GPIO_DRIVE_DEFAULT;
 import static com.codeferm.periphery.Gpio.GPIO_EDGE_NONE;
 import com.codeferm.periphery.Mmio;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.Callable;
 import org.apache.logging.log4j.LogManager;
 import picocli.CommandLine;
@@ -78,6 +81,24 @@ public class MmioTest implements Callable<Integer> {
     }
 
     /**
+     * Return values from all registers.
+     *
+     * @return List of register values.
+     */
+    public List<Integer> getRegValues() {
+        final var list = new ArrayList<Integer>();
+        try (final var mmio = new Mmio(base, size)) {
+            final var handle = mmio.getHandle();
+            for (int port = 0; port < 7; port++) {
+                for (int register = 0; register < 9; register++) {
+                    list.add(getReg(handle, port, register));
+                }
+            }
+        }
+        return list;
+    }
+
+    /**
      * Detect changes made by GPIO at register level.
      *
      * @return Exit code.
@@ -93,15 +114,7 @@ public class MmioTest implements Callable<Integer> {
                 LedBlink.class.getSimpleName())))) {
             Gpio.gpioWrite(gpio.getHandle(), false);
         }
-        final var list1 = new ArrayList<Integer>();
-        try (final var mmio = new Mmio(base, size)) {
-            final var handle = mmio.getHandle();
-            for (int port = 0; port < 7; port++) {
-                for (int register = 0; register < 9; register++) {
-                    list1.add(getReg(handle, port, register));
-                }
-            }
-        }
+        final var list1 = getRegValues();
         // Set pin for output and turn on
         logger.info("LED ON");
         try (final var gpio = new Gpio("/dev/gpiochip0", 203, new Gpio.GpioConfig().setBias(GPIO_BIAS_DEFAULT).
@@ -109,21 +122,24 @@ public class MmioTest implements Callable<Integer> {
                 cString(LedBlink.class.getSimpleName())))) {
             Gpio.gpioWrite(gpio.getHandle(), true);
         }
-        final var list2 = new ArrayList<Integer>();
-        try (final var mmio = new Mmio(base, size)) {
-            final var handle = mmio.getHandle();
-            for (int port = 0; port < 7; port++) {
-                for (int register = 0; register < 9; register++) {
-                    list2.add(getReg(handle, port, register));
-                }
-            }
-            // Turn off LED via MMIO
-            setReg(handle, 6, 4, 0x2000);
-        }
+        final var list2 = getRegValues();
         for (int i = 0; i < list1.size(); i++) {
             if (!list1.get(i).equals(list2.get(i))) {
                 logger.info(String.format("Port %d Reg %d = %08X %08X", i / 9, i % 9, list1.get(i), list2.get(i)));
             }
+        }
+        // Turn off LED via MMIO
+        try (final var mmio = new Mmio(base, size)) {
+            final var handle = mmio.getHandle();
+            final var start = Instant.now();
+            for (int i = 0; i < 100000000; i++) {
+                Mmio.mmioWrite32(handle, 232, 0x2800);
+                Mmio.mmioWrite32(handle, 232, 0x2000);
+            }
+            final var finish = Instant.now();
+            // Elapsed milliseconds
+            final var timeElapsed = Duration.between(start, finish).toMillis();
+            logger.info(String.format("%.2f writes per second", ((double) 100000000 / (double) timeElapsed) * 2000));
         }
         return exitCode;
     }
