@@ -217,10 +217,9 @@
                 <executions>
                     <execution>
                         <configuration>
-                            <!-- Compile for GPIO device use -DPERIPHERY_GPIO_CDEV_SUPPORT and remove for sysfs only -->
-                            <!-- BIAS settings: -DGPIOHANDLE_REQUEST_BIAS_PULL_UP -DGPIOHANDLE_REQUEST_BIAS_PULL_DOWN -DGPIOHANDLE_REQUEST_BIAS_DISABLE -->
+                            <!-- Compile for GPIO device use -DPERIPHERY_GPIO_CDEV_SUPPORT=1 and remove for sysfs only -->
                             <configureArgs>
-                                <arg>CFLAGS=-DPERIPHERY_GPIO_CDEV_SUPPORT</arg>
+                                <arg>CFLAGS=-O3 -std=gnu99 -pedantic -Wall -Wextra -Wno-unused-parameter -fPIC -DPERIPHERY_GPIO_CDEV_SUPPORT=1</arg>
                             </configureArgs>
                         </configuration>                        
                         <goals>
