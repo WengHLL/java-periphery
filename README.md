@@ -85,6 +85,15 @@ but you'll need to know the correct dtb file and section to remove) :
 * `sudo dtc -@ -I dts -O dtb -o sun8i-h2-plus-nanopi-duo.dtb sun8i-h2-plus-nanopi-duo.dts`
 * `reboot`
 
+## High performance GPIO using MMIO
+Using MMIO in a generic way to achieve fast GPIO for times when performance (bit
+banging, software based PWM, low CPU latency, etc) is required. This is my first
+attempt using a NanoPi Duo (H2+) which should work on any H2+ or H3 based SBC.
+I have also written a register mapper, so I can extract the register masks
+without having to do it by hand from the datasheet. Hand mask making is tedious
+and error prone. For now this is demonstrated in [DuoMmioMap](https://github.com/sgjava/java-periphery/blob/master/src/main/java/com/codeferm/periphery/demo/DuoMmioMap.java)
+class. MMIO GPIO reaches 3.8 MHz for writes while GPIOD reaches 488 KHz.
+
 ## Non-root access
 If you want to access devices without root do the following (you can try udev
 rules instead if you wish):
