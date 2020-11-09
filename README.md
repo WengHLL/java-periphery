@@ -92,8 +92,7 @@ attempt using a NanoPi Duo (H2+) which should work on any H2+ or H3 based SBC.
 I have also written a register mapper, so I can extract the register masks
 without having to do it by hand from the datasheet. Hand mask making is tedious
 and error prone. For now this is demonstrated in [DuoMmioMap](https://github.com/sgjava/java-periphery/blob/master/src/main/java/com/codeferm/periphery/demo/DuoMmioMap.java)
-class. MMIO GPIO reaches 3.8 MHz for writes while GPIOD reaches 488 KHz. Note
-this is write frequency, not square wave frequency.
+class. MMIO GPIO square wave reaches 1.92 MHz for writes while GPIOD reaches 236 KHz.
 
 ## Non-root access
 If you want to access devices without root do the following (you can try udev
@@ -195,14 +194,14 @@ After bulding Java Periphery simpily add the following artifact:
 Note that most performance tests focus on writes and not CPU overhead, so it's
 hard to compare. Technically you will actually be doing something like bit
 banging to simulate a protocol, so you need extra CPU bandwidth to do that.
-Please note frequency is not square wave, but writes per second.
+Please note write frequency is based on square wave.
 
 |SBC              |OS           |CPU Freq|Write KHz|Read KHz|Average CPU|
 | --------------- | ----------- | ------ | ------- | ------ | --------- |
-|Odroid XU4       |Armbian Focal|2.0 GHz |192      |195     |14%        |
-|Nano Pi Duo v1.0 |Armbian Focal|1.0 GHz |500      |318     |27%        |
-|Nano Pi Neo Plus2|Armbian Focal|1.0 GHz |654      |413     |27%        |
-|Odroid C2        |Armbian Focal|1.5 GHz |689      |488     |29%        |
+|Odroid XU4       |Armbian Focal|2.0 GHz | 96      |195     |14%        |
+|Nano Pi Duo v1.0 |Armbian Focal|1.0 GHz |250      |318     |27%        |
+|Nano Pi Neo Plus2|Armbian Focal|1.0 GHz |325      |413     |27%        |
+|Odroid C2        |Armbian Focal|1.5 GHz |345      |488     |29%        |
 
 ## Zulu Mission Control
 [Zulu Mission Control](https://docs.azul.com/zmc/ZMCUserGuide/Title.htm) allows
