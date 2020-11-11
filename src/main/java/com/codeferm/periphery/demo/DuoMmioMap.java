@@ -49,6 +49,16 @@ public class DuoMmioMap implements Callable<Integer> {
      */
     private final org.apache.logging.log4j.Logger logger = LogManager.getLogger(DuoMmioMap.class);
     /**
+     * Device option.
+     */
+    @CommandLine.Option(names = {"-d", "--device"}, description = "GPIO device defaults to 0")
+    private int device = 0;
+    /**
+     * Line option.
+     */
+    @CommandLine.Option(names = {"-l", "--line"}, description = "GPIO line defaults to 203 IOG11 for NanoPi Duo")
+    private int line = 203;    
+    /**
      * GPIO chips sometimes called banks.
      */
     private static final long CHIP[] = {0x1c20800L, 0x1f02c00L};
@@ -244,9 +254,9 @@ public class DuoMmioMap implements Callable<Integer> {
      * @param pin Pin.
      */
     public void dataPin(final Pin pin) {
-        final var device = String.format("/dev/gpiochip%d", pin.getChip());
+        final var dev = String.format("/dev/gpiochip%d", pin.getChip());
         // Set pin for input and turn off
-        try (final var gpio = new Gpio(device, pin.getPin(), new Gpio.GpioConfig().setBias(GPIO_BIAS_DEFAULT).
+        try (final var gpio = new Gpio(dev, pin.getPin(), new Gpio.GpioConfig().setBias(GPIO_BIAS_DEFAULT).
                 setDirection(GPIO_DIR_OUT).setDrive(GPIO_DRIVE_DEFAULT).setEdge(GPIO_EDGE_NONE).setInverted(false).setLabel(cString(
                 LedBlink.class.getSimpleName())))) {
             Gpio.gpioWrite(gpio.getHandle(), false);
@@ -266,9 +276,9 @@ public class DuoMmioMap implements Callable<Integer> {
      * @param pin Pin number.
      */
     public void configPin(final Pin pin) {
-        final var device = String.format("/dev/gpiochip%d", pin.getChip());
+        final var dev = String.format("/dev/gpiochip%d", pin.getChip());
         // Set pin for input and turn off
-        try (final var gpio = new Gpio(device, pin.getPin(), new Gpio.GpioConfig().setBias(GPIO_BIAS_DEFAULT).
+        try (final var gpio = new Gpio(dev, pin.getPin(), new Gpio.GpioConfig().setBias(GPIO_BIAS_DEFAULT).
                 setDirection(GPIO_DIR_IN).setDrive(GPIO_DRIVE_DEFAULT).setEdge(GPIO_EDGE_NONE).setInverted(false).setLabel(cString(
                 LedBlink.class.getSimpleName())))) {
             Gpio.gpioSetDirection(gpio.getHandle(), GPIO_DIR_IN);
@@ -288,9 +298,9 @@ public class DuoMmioMap implements Callable<Integer> {
      * @param samples How many samples to run.
      */
     public void perfGpiod(final Pin pin, final long samples) {
-        final var device = String.format("/dev/gpiochip%d", pin.getChip());
+        final var dev = String.format("/dev/gpiochip%d", pin.getChip());
         final var line = pin.getPin();
-        try (final var gpio = new Gpio(device, line, GPIO_DIR_OUT)) {
+        try (final var gpio = new Gpio(dev, line, GPIO_DIR_OUT)) {
             var handle = gpio.getHandle();
             logger.info(String.format("Running GPIOD write test with %d samples", samples));
             final var start = Instant.now();
@@ -403,7 +413,7 @@ public class DuoMmioMap implements Callable<Integer> {
             dataPin(value);
         });
         // Performance
-        final var pin = pinMap.get(new PinKey(0, 203));
+        final var pin = pinMap.get(new PinKey(device, line));
         perfGpiod(pin, 10000000);
         perfGood(pin, 10000000);
         perfBetter(pin, 10000000);
