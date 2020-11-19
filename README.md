@@ -156,16 +156,21 @@ mapper, so you can extract the configuration, data and pull registers/masks
 without having to do it by hand from the datasheet. Doing this totally by hand
 is tedious and error prone. The method I use is using a well know interface
 (GPIO device) to make changes and detecting register deltas. You still need to
-create a input file with various board specific parameters. Let's use the NanoPi
-Duo (H2+) as an example:
+create a [input file](https://github.com/sgjava/java-periphery/blob/master/src/main/resources/duo.properties)
+with various board specific parameters. Let's use the NanoPi Duo (H2+) as an example:
 * `sudo java -cp $HOME/java-periphery/target/java-periphery-1.0.0-SNAPSHOT.jar:$HOME/java-periphery/target/java-periphery-1.0.0-SNAPSHOT-linux32.jar com.codeferm.periphery.mmio.Gen -i duo.properties -o duo-map.properties`
 * `sudo java -cp $HOME/java-periphery/target/java-periphery-1.0.0-SNAPSHOT.jar:$HOME/java-periphery/target/java-periphery-1.0.0-SNAPSHOT-linux32.jar com.codeferm.periphery.mmio.Perf -i duo-map.properties -d 0 -l 203`
+
 NanoPi Neo Plus2 (H5) example:
 * `sudo java -cp $HOME/java-periphery/target/java-periphery-1.0.0-SNAPSHOT.jar:$HOME/java-periphery/target/java-periphery-1.0.0-SNAPSHOT-linux64.jar com.codeferm.periphery.mmio.Gen -i neoplus2.properties -o neoplus2-map.properties`
 * `sudo java -cp $HOME/java-periphery/target/java-periphery-1.0.0-SNAPSHOT.jar:$HOME/java-periphery/target/java-periphery-1.0.0-SNAPSHOT-linux64.jar com.codeferm.periphery.mmio.Perf -i neoplus2-map.properties -d 1 -l 203`
-As you can see above the same code works on 32 bit H2+ and 64 bit H5 CPU. This
-means almost all Allwinner CPUs can be easily supported with the right input
-file.
+
+As you can see above the same performance test code works on a 32 bit H2+ and a
+64 bit H5 CPU. This means almost all Allwinner CPUs can be easily supported with
+the right input file. I still need to test other boards, but this is promising
+and probably the only high performance GPIO code that is truly cross platform.
+No custom adapters or other one off code is required currently. Also, I use the
+same pin numbers as the GPIO device, so no goofy wiringPi or BCM pin numbering.
 
 ## How GPIO pins are mapped
 This is based on testing on a NanoPi Duo. gpiochip0 starts at 0 and gpiochip1
