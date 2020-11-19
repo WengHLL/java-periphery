@@ -77,7 +77,7 @@ public class GpioPerf implements Callable<Integer> {
             final var finish = Instant.now();
             // Elapsed milliseconds
             final var timeElapsed = Duration.between(start, finish).toMillis();
-            logger.info(String.format("%.2f writes per second", ((double) samples / (double) timeElapsed) * 2000));
+            logger.info(String.format("%.2f writes per second (on/off)", ((double) samples / (double) timeElapsed) * 1000));
         }
         // Read test
         try (final var gpio = new Gpio(device, line, GPIO_DIR_IN)) {

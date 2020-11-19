@@ -41,16 +41,6 @@ public class Adxl345 implements Callable<Integer> {
     private short address = 0x53;
 
     /**
-     * Main parsing, error handling and handling user requests for usage help or version help are done with one line of code.
-     *
-     * @param args Argument list.
-     */
-    public static void main(String... args) {
-        var exitCode = new CommandLine(new Adxl345()).execute(args);
-        System.exit(exitCode);
-    }
-
-    /**
      * Get data range setting.
      *
      * Register 0x31 -- DATA_FORMAT (Read/Write)
@@ -304,4 +294,13 @@ public class Adxl345 implements Callable<Integer> {
         }
         return exitCode;
     }
+    
+    /**
+     * Main parsing, error handling and handling user requests for usage help or version help are done with one line of code.
+     *
+     * @param args Argument list.
+     */
+    public static void main(String... args) {
+        System.exit(new CommandLine(new Adxl345()).execute(args));
+    }    
 }

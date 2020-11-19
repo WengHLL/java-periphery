@@ -52,16 +52,6 @@ public class ButtonThread implements Callable<Integer> {
     private int line = 3;
 
     /**
-     * Main parsing, error handling and handling user requests for usage help or version help are done with one line of code.
-     *
-     * @param args Argument list.
-     */
-    public static void main(String... args) {
-        var exitCode = new CommandLine(new ButtonThread()).execute(args);
-        System.exit(exitCode);
-    }
-
-    /**
      * Wait for edge thread.
      *
      * @param executor Executor service.
@@ -121,5 +111,14 @@ public class ButtonThread implements Callable<Integer> {
             executor.shutdownNow();
         }
         return exitCode;
+    }
+    
+    /**
+     * Main parsing, error handling and handling user requests for usage help or version help are done with one line of code.
+     *
+     * @param args Argument list.
+     */
+    public static void main(String... args) {
+        System.exit(new CommandLine(new ButtonThread()).execute(args));
     }
 }

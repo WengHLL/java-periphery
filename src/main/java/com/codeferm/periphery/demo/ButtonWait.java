@@ -48,16 +48,6 @@ public class ButtonWait implements Callable<Integer> {
     private int line = 3;
 
     /**
-     * Main parsing, error handling and handling user requests for usage help or version help are done with one line of code.
-     *
-     * @param args Argument list.
-     */
-    public static void main(String... args) {
-        var exitCode = new CommandLine(new ButtonWait()).execute(args);
-        System.exit(exitCode);
-    }
-
-    /**
      * Use blocking edge detection.
      *
      * @return Exit code.
@@ -88,5 +78,14 @@ public class ButtonWait implements Callable<Integer> {
             exitCode = 1;
         }
         return exitCode;
+    }
+    
+    /**
+     * Main parsing, error handling and handling user requests for usage help or version help are done with one line of code.
+     *
+     * @param args Argument list.
+     */
+    public static void main(String... args) {
+        System.exit(new CommandLine(new ButtonWait()).execute(args));
     }
 }

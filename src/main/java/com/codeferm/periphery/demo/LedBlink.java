@@ -45,17 +45,7 @@ public class LedBlink implements Callable<Integer> {
      */
     @Option(names = {"-l", "--line"}, description = "GPIO line defaults to 203 IOG11 for NanoPi Duo")
     private int line = 203;
-
-    /**
-     * Main parsing, error handling and handling user requests for usage help or version help are done with one line of code.
-     *
-     * @param args Argument list.
-     */
-    public static void main(String... args) {
-        var exitCode = new CommandLine(new LedBlink()).execute(args);
-        System.exit(exitCode);
-    }
-
+    
     /**
      * Blink LED.
      *
@@ -82,5 +72,14 @@ public class LedBlink implements Callable<Integer> {
             exitCode = 1;
         }
         return exitCode;
+    }    
+
+    /**
+     * Main parsing, error handling and handling user requests for usage help or version help are done with one line of code.
+     *
+     * @param args Argument list.
+     */
+    public static void main(String... args) {
+        System.exit(new CommandLine(new LedBlink()).execute(args));
     }
 }

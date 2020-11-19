@@ -39,16 +39,6 @@ public class SerialLoopback implements Callable<Integer> {
     private int baud = 115200;
 
     /**
-     * Main parsing, error handling and handling user requests for usage help or version help are done with one line of code.
-     *
-     * @param args Argument list.
-     */
-    public static void main(String... args) {
-        var exitCode = new CommandLine(new SerialLoopback()).execute(args);
-        System.exit(exitCode);
-    }
-
-    /**
      * Send data via loopback.
      *
      * @return Exit code.
@@ -71,5 +61,14 @@ public class SerialLoopback implements Callable<Integer> {
             exitCode = 1;
         }
         return exitCode;
+    }
+    
+    /**
+     * Main parsing, error handling and handling user requests for usage help or version help are done with one line of code.
+     *
+     * @param args Argument list.
+     */
+    public static void main(String... args) {
+        System.exit(new CommandLine(new SerialLoopback()).execute(args));
     }
 }

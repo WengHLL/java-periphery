@@ -33,16 +33,6 @@ public class SysLedBlink implements Callable<Integer> {
     private String name = "nanopi:green:pwr";
 
     /**
-     * Main parsing, error handling and handling user requests for usage help or version help are done with one line of code.
-     *
-     * @param args Argument list.
-     */
-    public static void main(String... args) {
-        var exitCode = new CommandLine(new SysLedBlink()).execute(args);
-        System.exit(exitCode);
-    }
-
-    /**
      * Blink system LED.
      *
      * @return Exit code.
@@ -72,4 +62,13 @@ public class SysLedBlink implements Callable<Integer> {
         }
         return exitCode;
     }
+    
+    /**
+     * Main parsing, error handling and handling user requests for usage help or version help are done with one line of code.
+     *
+     * @param args Argument list.
+     */
+    public static void main(String... args) {
+        System.exit(new CommandLine(new SysLedBlink()).execute(args));
+    }    
 }

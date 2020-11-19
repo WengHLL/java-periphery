@@ -34,16 +34,6 @@ public class SpiLoopback implements Callable<Integer> {
     private String device = "/dev/spidev1.0";
 
     /**
-     * Main parsing, error handling and handling user requests for usage help or version help are done with one line of code.
-     *
-     * @param args Argument list.
-     */
-    public static void main(String... args) {
-        var exitCode = new CommandLine(new SpiLoopback()).execute(args);
-        System.exit(exitCode);
-    }
-
-    /**
      * Send data via loopback.
      *
      * @return Exit code.
@@ -66,4 +56,13 @@ public class SpiLoopback implements Callable<Integer> {
         }
         return exitCode;
     }
+    
+    /**
+     * Main parsing, error handling and handling user requests for usage help or version help are done with one line of code.
+     *
+     * @param args Argument list.
+     */
+    public static void main(String... args) {
+        System.exit(new CommandLine(new SpiLoopback()).execute(args));
+    }    
 }

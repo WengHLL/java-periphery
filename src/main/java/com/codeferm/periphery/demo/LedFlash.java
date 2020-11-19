@@ -38,16 +38,6 @@ public class LedFlash implements Callable<Integer> {
     private int channel = 0;
 
     /**
-     * Main parsing, error handling and handling user requests for usage help or version help are done with one line of code.
-     *
-     * @param args Argument list.
-     */
-    public static void main(String... args) {
-        var exitCode = new CommandLine(new LedFlash()).execute(args);
-        System.exit(exitCode);
-    }
-
-    /**
      * Gradually increase and decrease LED brightness.
      *
      * @param handle Valid pointer to an allocated LED handle structure.
@@ -96,4 +86,13 @@ public class LedFlash implements Callable<Integer> {
         }
         return exitCode;
     }
+    
+    /**
+     * Main parsing, error handling and handling user requests for usage help or version help are done with one line of code.
+     *
+     * @param args Argument list.
+     */
+    public static void main(String... args) {
+        System.exit(new CommandLine(new LedFlash()).execute(args));
+    }    
 }
