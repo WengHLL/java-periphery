@@ -85,15 +85,6 @@ but you'll need to know the correct dtb file and section to remove) :
 * `sudo dtc -@ -I dts -O dtb -o sun8i-h2-plus-nanopi-duo.dtb sun8i-h2-plus-nanopi-duo.dts`
 * `reboot`
 
-## High performance GPIO using MMIO
-Using MMIO in a generic way to achieve fast GPIO for times when performance (bit
-banging, software based PWM, low CPU latency, etc) is required. This is my first
-attempt using a NanoPi Duo (H2+) which should work on any H2+ or H3 based SBC.
-I have also written a register mapper, so I can extract the register masks
-without having to do it by hand from the datasheet. Hand mask making is tedious
-and error prone. For now this is demonstrated in [DuoMmioMap](https://github.com/sgjava/java-periphery/blob/master/src/main/java/com/codeferm/periphery/demo/DuoMmioMap.java)
-class. MMIO GPIO square wave reaches 1.92 MHz for writes while GPIOD reaches 236 KHz.
-
 ## Non-root access
 If you want to access devices without root do the following (you can try udev
 rules instead if you wish):
@@ -147,6 +138,34 @@ comment out `<configureArgs>` in the `hawtjni-maven-plugin` section of the POM.
 * `./install.sh`
 * Check various log files if you have issues running the demo code. Something
 could have gone wrong during the build/bindings generation processes.
+
+### Build java-periphery with custom CFLAGS
+The gcc default include paths usually do not point to the latest kernel source.
+In order to use the latest features of c-periphery you will need to use the
+correct include path. After the install.sh script completes:
+* `uname -a` to get kernel version
+* `sudo armbian-config` Software, Headers_install
+* `grep -R -i "GPIOHANDLE_REQUEST_BIAS_DISABLE" /usr/src`
+* `cd ~/java-periphery`
+* `mvn clean install "-Dcflags=-I/usr/src/linux-headers-5.8.16-sunxi/include/uapi -I/usr/src/linux-headers-5.8.16-sunxi/include"` replace with your paths
+
+## High performance GPIO using MMIO
+I have created a generic way to achieve fast GPIO for times when performance (bit
+banging, software based PWM, low CPU latency, etc) is required. I have written a
+mapper, so you can extract the configuration, data and pull registers/masks
+without having to do it by hand from the datasheet. Doing this totally by hand
+is tedious and error prone. The method I use is using a well know interface
+(GPIO device) to make changes and detecting register deltas. You still need to
+create a input file with various board specific parameters. Let's use the NanoPi
+Duo (H2+) as an example:
+* `sudo java -cp $HOME/java-periphery/target/java-periphery-1.0.0-SNAPSHOT.jar:$HOME/java-periphery/target/java-periphery-1.0.0-SNAPSHOT-linux32.jar com.codeferm.periphery.mmio.Gen -i duo.properties -o duo-map.properties`
+* `sudo java -cp $HOME/java-periphery/target/java-periphery-1.0.0-SNAPSHOT.jar:$HOME/java-periphery/target/java-periphery-1.0.0-SNAPSHOT-linux32.jar com.codeferm.periphery.mmio.Perf -i duo-map.properties -d 0 -l 203`
+NanoPi Neo Plus2 (H5) example:
+* `sudo java -cp $HOME/java-periphery/target/java-periphery-1.0.0-SNAPSHOT.jar:$HOME/java-periphery/target/java-periphery-1.0.0-SNAPSHOT-linux64.jar com.codeferm.periphery.mmio.Gen -i neoplus2.properties -o neoplus2-map.properties`
+* `sudo java -cp $HOME/java-periphery/target/java-periphery-1.0.0-SNAPSHOT.jar:$HOME/java-periphery/target/java-periphery-1.0.0-SNAPSHOT-linux64.jar com.codeferm.periphery.mmio.Perf -i neoplus2-map.properties -d 1 -l 203`
+As you can see above the same code works on 32 bit H2+ and 64 bit H5 CPU. This
+means almost all Allwinner CPUs can be easily supported with the right input
+file.
 
 ## How GPIO pins are mapped
 This is based on testing on a NanoPi Duo. gpiochip0 starts at 0 and gpiochip1

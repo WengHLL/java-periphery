@@ -15,6 +15,8 @@
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <hawtjni.version>1.19-SNAPSHOT</hawtjni.version>
+        <!-- Change CFLAGS here or pass on mvn command line to override -->
+        <cflags></cflags>
     </properties>
     
     <build>
@@ -217,9 +219,23 @@
                 <executions>
                     <execution>
                         <configuration>
-                            <!-- Compile for GPIO device use -DPERIPHERY_GPIO_CDEV_SUPPORT=1 and remove for sysfs only -->
+                            <!--
+                            To compile for GPIO device use -DPERIPHERY_GPIO_CDEV_SUPPORT=1 and remove this for sysfs only.
+                            The rest of the CFLAGS come from the actual c-periphery Makefile. If you would like to use the
+                            kernel headers that match your distribution you can add it to CFLAGS.
+                            
+                            First locate gpio.h with bias definitions:
+                            
+                            grep -R -i "GPIOHANDLE_REQUEST_BIAS_DISABLE" /usr/src
+                            
+                            Then add to CFLAGS (use actual paths):
+                            
+                            -I/usr/src/linux-headers-5.8.16-sunxi64/include/uapi -I/usr/src/linux-headers-5.8.16-sunxi64/include
+                            
+                            The default include path for gcc may contain older header files.
+                            -->
                             <configureArgs>
-                                <arg>CFLAGS=-O3 -std=gnu99 -pedantic -Wall -Wextra -Wno-unused-parameter -fPIC -DPERIPHERY_GPIO_CDEV_SUPPORT=1</arg>
+                                <arg>CFLAGS=${cflags} -O3 -std=gnu99 -pedantic -Wall -Wextra -Wno-unused-parameter -fPIC -DPERIPHERY_GPIO_CDEV_SUPPORT=1</arg>
                             </configureArgs>
                         </configuration>                        
                         <goals>
