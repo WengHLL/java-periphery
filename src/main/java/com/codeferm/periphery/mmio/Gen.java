@@ -76,14 +76,14 @@ public class Gen implements Callable<Integer> {
     }
 
     /**
-     * Compare list values and log difference. Filter is used to select on desired register name. A filter is required because
-     * setting GPIO mode also sets data register sometimes. This prevents reading the wrong register.
+     * Compare list values and return index where difference is found. Filter is used to select on desired register name. A filter
+     * is required because setting GPIO mode also sets data register sometimes. This prevents reading the wrong register.
      *
      * @param list1 First list.
      * @param list2 Second list.
      * @param filter Include filter.
      * @param registerName Register names.
-     * @return
+     * @return Index of difference.
      */
     public int listDiff(final List<Integer> list1, final List<Integer> list2, final String filter, final List<String> registerName) {
         var i = 0;
@@ -268,5 +268,4 @@ public class Gen implements Callable<Integer> {
     public static void main(String... args) {
         System.exit(new CommandLine(new Gen()).execute(args));
     }
-
 }
