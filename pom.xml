@@ -49,6 +49,26 @@
                     <trimStackTrace>false</trimStackTrace>
                 </configuration>            
             </plugin>
+            <plugin>
+                <groupId>com.github.maven-nar</groupId>
+                <artifactId>nar-maven-plugin</artifactId>
+                <version>3.10.1</version>
+                <extensions>true</extensions>
+                <configuration>
+                    <libraries>
+                        <library>
+                            <type>jni</type>
+                            <narSystemPackage>test</narSystemPackage>
+                            <linkCPP>false</linkCPP>
+                        </library>
+                    </libraries>
+                    <javah>
+                        <includes>
+                            <include></include>
+                        </includes>
+                    </javah>
+                </configuration>
+            </plugin>            
             <!-- Download c-periphery source -->
             <plugin>
                 <groupId>com.googlecode.maven-download-plugin</groupId>
@@ -222,17 +242,17 @@
                             <!--
                             To compile for GPIO device use -DPERIPHERY_GPIO_CDEV_SUPPORT=1 and remove this for sysfs only.
                             The rest of the CFLAGS come from the actual c-periphery Makefile. If you would like to use the
-                            kernel headers that match your distribution you can add it to CFLAGS.
+                            gpio.h header that matches your distribution you can add it to CFLAGS.
                             
                             First locate gpio.h with bias definitions:
                             
                             grep -R -i "GPIOHANDLE_REQUEST_BIAS_DISABLE" /usr/src
                             
-                            Then add to CFLAGS (use actual paths):
+                            Then add to CFLAGS (use actual path):
                             
-                            -I/usr/src/linux-headers-5.8.16-sunxi64/include/uapi -I/usr/src/linux-headers-5.8.16-sunxi64/include
+                            -I/usr/src/linux-headers-5.9.6-meson64/include/uapi/linux/gpio.h
                             
-                            The default include path for gcc may contain older header files.
+                            The default include path for gcc may contain older gpio.h header file.
                             -->
                             <configureArgs>
                                 <arg>CFLAGS=${cflags} -O3 -std=gnu99 -pedantic -Wall -Wextra -Wno-unused-parameter -fPIC -DPERIPHERY_GPIO_CDEV_SUPPORT=1</arg>
@@ -276,11 +296,10 @@
                                     </excludes>
                                 </filter>
                             </filters>              
-                            
                         </configuration>
                     </execution>
                 </executions>
-            </plugin>                  
+            </plugin>
         </plugins>
     </build>
     
