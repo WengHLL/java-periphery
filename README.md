@@ -140,14 +140,14 @@ comment out `<configureArgs>` in the `hawtjni-maven-plugin` section of the POM.
 could have gone wrong during the build/bindings generation processes.
 
 ### Build java-periphery with custom CFLAGS
-The gcc default include paths usually do not point to the latest kernel source.
-In order to use the latest features of c-periphery you will need to use the
+The gcc default include paths usually do not point to the latest gpio.h. In
+order to use the latest features of c-periphery you will need to use the
 correct include path. After the install.sh script completes:
 * `uname -a` to get kernel version
 * `sudo armbian-config` Software, Headers_install
 * `grep -R -i "GPIOHANDLE_REQUEST_BIAS_DISABLE" /usr/src`
 * `cd ~/java-periphery`
-* `mvn clean install "-Dcflags=-I/usr/src/linux-headers-5.8.16-sunxi/include/uapi -I/usr/src/linux-headers-5.8.16-sunxi/include"` replace with your paths
+* `mvn clean install "-Dcflags=-I/usr/src/linux-headers-5.9.6-meson64/include/uapi/linux/gpio.h"` replace with your path
 
 ## High performance GPIO using MMIO
 I have created a generic way to achieve fast GPIO for times when performance (bit
@@ -157,7 +157,11 @@ without having to do it by hand from the datasheet. Doing this totally by hand
 is tedious and error prone. The method I use is using a well know interface
 (GPIO device) to make changes and detecting register deltas. You still need to
 create a [input file](https://github.com/sgjava/java-periphery/blob/master/src/main/resources/duo.properties)
-with various board specific parameters. Let's use the NanoPi Duo (H2+) as an example:
+with various board specific parameters. Make sure you disable all hardware in
+armbian-config System, Hardware and remove console=serial from
+/boot/armbianEnv.txt. You want multi-function pins to act as GPIO pins.
+
+NanoPi Duo (H2+) example:
 * `sudo java -cp $HOME/java-periphery/target/java-periphery-1.0.0-SNAPSHOT.jar:$HOME/java-periphery/target/java-periphery-1.0.0-SNAPSHOT-linux32.jar com.codeferm.periphery.mmio.Gen -i duo.properties -o duo-map.properties`
 * `sudo java -cp $HOME/java-periphery/target/java-periphery-1.0.0-SNAPSHOT.jar:$HOME/java-periphery/target/java-periphery-1.0.0-SNAPSHOT-linux32.jar com.codeferm.periphery.mmio.Perf -i duo-map.properties -d 0 -l 203`
 
