@@ -14,7 +14,6 @@ import static com.codeferm.periphery.Gpio.GPIO_DIR_OUT;
 import static com.codeferm.periphery.Gpio.GPIO_DRIVE_DEFAULT;
 import static com.codeferm.periphery.Gpio.GPIO_EDGE_NONE;
 import com.codeferm.periphery.Mmio;
-import static com.codeferm.periphery.Mmio.mmioSize;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
