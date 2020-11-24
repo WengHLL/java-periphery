@@ -86,7 +86,7 @@ public class MemScan implements Callable<Integer> {
         for (int i = 0; i < list1.size(); i++) {
             if (!list1.get(i).equals(list2.get(i))) {
                 logger.info(String.format("%s difference found at offset 0x%08x before 0x%08x after 0x%08x difference 0x%08x", text,
-                        i, list1.get(i), list2.get(i), list2.get(i) - list1.get(i)));
+                        i * 4, list1.get(i), list2.get(i), list2.get(i) - list1.get(i)));
             }
         }
     }
