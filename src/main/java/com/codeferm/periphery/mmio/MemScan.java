@@ -46,8 +46,8 @@ public class MemScan implements Callable<Integer> {
     /**
      * Memory size to scan.
      */
-    @CommandLine.Option(names = {"-s", "--size"}, description = "Memorry size to scan defaults to 0x01")
-    private long size = 0x01;
+    @CommandLine.Option(names = {"-w", "--words"}, description = "32 bit words to read defaults to 0x01")
+    private long words = 0x01;
     /**
      * Device option.
      */
@@ -68,8 +68,8 @@ public class MemScan implements Callable<Integer> {
     public List<Integer> getRegValues(final Long mmioHandle) {
         final var list = new ArrayList<Integer>();
         final var value = new int[1];
-        for (long i = 0; i < size; i++) {
-            Mmio.mmioRead32(mmioHandle, i, value);
+        for (long i = 0; i < words; i++) {
+            Mmio.mmioRead32(mmioHandle, i * 4, value);
             list.add(value[0]);
         }
         return list;
@@ -85,7 +85,8 @@ public class MemScan implements Callable<Integer> {
     public void listDiff(final List<Integer> list1, final List<Integer> list2, final String text) {
         for (int i = 0; i < list1.size(); i++) {
             if (!list1.get(i).equals(list2.get(i))) {
-                logger.info(String.format("%s difference found at offset 0x%08x = 0x%08x", text, i, list2.get(i) - list1.get(i)));
+                logger.info(String.format("%s difference found at offset 0x%08x before 0x%08x after 0x%08x difference 0x%08x", text,
+                        i, list1.get(i), list2.get(i), list2.get(i) - list1.get(i)));
             }
         }
     }
@@ -169,8 +170,8 @@ public class MemScan implements Callable<Integer> {
     @Override
     public Integer call() throws InterruptedException {
         var exitCode = 0;
-        logger.debug(String.format("Memory address 0x%08x size 0x%08x", address, size));
-        try (final var mmio = new Mmio(address, size)) {
+        logger.debug(String.format("Memory address 0x%08x words 0x%08x", address, words));
+        try (final var mmio = new Mmio(address, words * 4)) {
             detectConfig(mmio.getHandle());
             detectData(mmio.getHandle());
             detectPull(mmio.getHandle());
