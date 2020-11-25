@@ -67,7 +67,7 @@ public class Gen implements Callable<Integer> {
         for (int chip = 0; chip < portChip.size(); chip++) {
             // Read all registers
             for (int register = 0; register < registerOffset.size(); register++) {
-                Mmio.mmioRead32(mmioHandle.get(portChip.get(chip)), portOffset.get(chip) + (register * 4), value);
+                Mmio.mmioRead32(mmioHandle.get(portChip.get(chip)), portOffset.get(chip) + registerOffset.get(register), value);
                 list.add(value[0]);
             }
         }
