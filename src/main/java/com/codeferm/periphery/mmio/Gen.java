@@ -120,9 +120,9 @@ public class Gen implements Callable<Integer> {
                 setDirection(GPIO_DIR_OUT).setDrive(GPIO_DRIVE_DEFAULT).setEdge(GPIO_EDGE_NONE).setInverted(false).setLabel(cString(
                 Gen.class.getSimpleName())))) {
             Gpio.gpioWrite(gpio.getHandle(), false);
-            final var list1 = getRegValues(mmioHandle, groupChip, dataInOffset);
+            final var list1 = getRegValues(mmioHandle, groupChip, dataOutOffset);
             Gpio.gpioWrite(gpio.getHandle(), true);
-            final var list2 = getRegValues(mmioHandle, groupChip, dataInOffset);
+            final var list2 = getRegValues(mmioHandle, groupChip, dataOutOffset);
             // Find the register delta
             final var reg = listDiff(list1, list2);
             // Make sure a delta is detected
