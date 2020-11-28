@@ -152,11 +152,10 @@ correct include path. After the install.sh script completes:
 ## High performance GPIO using MMIO
 I have created a generic way to achieve fast GPIO for times when performance (bit
 banging, software based PWM, low CPU latency, etc) is required. I have written a
-mapper, so you can extract the configuration, data and pull registers/masks
-without having to do it by hand from the datasheet. Doing this totally by hand
-is tedious and error prone. The method I use is using a well know interface
-(GPIO device) to make changes and detecting register deltas. You still need to
-create a [input file](https://github.com/sgjava/java-periphery/blob/master/src/main/resources/duo.properties)
+mapper, so you can extract the  data register masks without having to do it by
+hand from the datasheet. Doing this totally by hand is tedious and error prone.
+The method I use is using a well know interface (GPIO device) to make changes
+and detecting register deltas. You still need to create a [input file](https://github.com/sgjava/java-periphery/blob/master/src/main/resources/duo.properties)
 with various board specific parameters. Make sure you disable all hardware in
 armbian-config System, Hardware and remove console=serial from
 /boot/armbianEnv.txt. You want multi-function pins to act as GPIO pins.
@@ -175,6 +174,28 @@ the right input file. I still need to test other boards, but this is promising
 and probably the only high performance GPIO code that is truly cross platform.
 No custom adapters or other one off code is required currently. Also, I use the
 same pin numbers as the GPIO device, so no goofy wiringPi or BCM pin numbering.
+Keep in mind that only one core is used, so CPU will never exceed 25% on a quad
+core system.
+
+If you want to map your own board you start by getting the data sheet and
+finding the data registers. I've written a little memory tool
+[MemScan](https://github.com/sgjava/java-periphery/blob/master/src/main/java/com/codeferm/periphery/mmio/MemScan.java)
+that will allow you to see what bits change for a range of registers using mode,
+data and pull operations. For example on the ODROID C2 lets look at chip 0 and
+line 9:
+
+`sudo java -cp $HOME/java-periphery/target/java-periphery-1.0.0-SNAPSHOT.jar:$HOME/java-periphery/target/java-periphery-1.0.0-SNAPSHOT-linux64.jar com.codeferm.periphery.mmio.MemScan -a 0xc8100024 -w 0x03 -d 0 -l 9`
+
+Output:
+
+```11:55:39.342 [main] DEBUG MemScan - Memory address 0xc8100024 words 0x00000003
+11:55:39.538 [main] INFO  MemScan - Mode difference found at offset 0x00000000 before 0xa0003ef7 after 0xa0003cf7 difference 0x00000200
+11:55:39.540 [main] INFO  MemScan - Mode difference found at offset 0x00000004 before 0x80003ef7 after 0x80003cf7 difference 0x00000200
+11:55:39.543 [main] INFO  MemScan - Data difference found at offset 0x00000000 before 0xa0003cf7 after 0xa2003cf7 difference 0x02000000
+11:55:39.545 [main] INFO  MemScan - Data difference found at offset 0x00000004 before 0x80003cf7 after 0x80003ef7 difference 0x00000200
+11:55:39.548 [main] ERROR MemScan - Device 0 line   9 Error Kernel version does not support configuring GPIO line bias```
+
+Note the bias error is due to no compiling with latest kernel headers.
 
 ## How GPIO pins are mapped
 This is based on testing on a NanoPi Duo. gpiochip0 starts at 0 and gpiochip1
@@ -218,18 +239,18 @@ After bulding Java Periphery simpily add the following artifact:
 <version>1.0.0-SNAPSHOT</version>
 ```
 
-## GPIO Performance using GpioPerf
+## GPIO Performance using Perf
 Note that most performance tests focus on writes and not CPU overhead, so it's
 hard to compare. Technically you will actually be doing something like bit
 banging to simulate a protocol, so you need extra CPU bandwidth to do that.
-Please note write frequency is based on square wave.
+Please note write frequency is based on square wave (rapid on/off).
 
-|SBC              |OS           |CPU Freq|Write KHz|Read KHz|Average CPU|
-| --------------- | ----------- | ------ | ------- | ------ | --------- |
-|Odroid XU4       |Armbian Focal|2.0 GHz | 96      |195     |14%        |
-|Nano Pi Duo v1.0 |Armbian Focal|1.0 GHz |250      |318     |27%        |
-|Nano Pi Neo Plus2|Armbian Focal|1.0 GHz |325      |413     |27%        |
-|Odroid C2        |Armbian Focal|1.5 GHz |345      |488     |29%        |
+|SBC              |OS           |CPU Freq|GPIOD Write KHz|MMIO Write KHz|Average CPU|
+| --------------- | ----------- | ------ | ------------- | ------------ | --------- |
+|Odroid XU4       |Armbian Focal|2.0 GHz | 96            |195           |14%        |
+|Nano Pi Duo v1.0 |Armbian Focal|1.0 GHz |250            |318           |27%        |
+|Nano Pi Neo Plus2|Armbian Focal|1.0 GHz |325            |413           |27%        |
+|Odroid C2        |Armbian Focal|1.5 GHz |365            |2346          |25%        |
 
 ## Zulu Mission Control
 [Zulu Mission Control](https://docs.azul.com/zmc/ZMCUserGuide/Title.htm) allows
