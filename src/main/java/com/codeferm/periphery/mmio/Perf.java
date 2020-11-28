@@ -73,7 +73,7 @@ public class Perf implements Callable<Integer> {
     public void write(final Pin pin, final boolean value) {
         final var reg = new int[1];
         // Get current register value
-        Mmio.mmioRead32(pin.getMmioHadle(), pin.getDataIn().getOffset(), reg);
+        Mmio.mmioRead32(pin.getMmioHadle(), pin.getDataOut().getOffset(), reg);
         if (!value) {
             Mmio.mmioWrite32(pin.getMmioHadle(), pin.getDataOut().getOffset(), reg[0] & (pin.getDataOut().getMask() ^ 0xffffffff));
         } else {
