@@ -209,9 +209,9 @@ defaults.
 
 |SBC              |OS           |CPU Freq|GPIOD Write KHz|MMIO Write KHz|Average CPU|
 | --------------- | ----------- | ------ | ------------- | ------------ | --------- |
-|Odroid XU4       |Armbian Focal|2.0 GHz | 96            |195           |14%        |
+|Odroid XU4       |Armbian Focal|2.0 GHz |TODO           |TODO          |TODO       |
 |Nano Pi Duo v1.0 |Armbian Focal|1.0 GHz |242            |1790          |25%        |
-|Nano Pi M1       |Armbian Focal|1.2 GHz |325            |413           |25%        |
+|Nano Pi M1       |Armbian Focal|1.2 GHz |310            |2355          |25%        |
 |Nano Pi Neo Plus2|Armbian Focal|1.0 GHz |339            |2341          |25%        |
 |Odroid C2        |Armbian Focal|1.5 GHz |365            |2346          |25%        |
 
