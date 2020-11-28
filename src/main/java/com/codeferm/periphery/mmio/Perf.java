@@ -6,25 +6,12 @@ package com.codeferm.periphery.mmio;
 import com.codeferm.periphery.Gpio;
 import static com.codeferm.periphery.Gpio.GPIO_DIR_OUT;
 import com.codeferm.periphery.Mmio;
-import com.codeferm.periphery.mmio.Pin.PinMode;
-import static com.codeferm.periphery.mmio.Pin.PinMode.INPUT;
-import static com.codeferm.periphery.mmio.Pin.PinMode.OUTPUT;
-import com.codeferm.periphery.mmio.Pin.PinState;
-import static com.codeferm.periphery.mmio.Pin.PinState.OFF;
-import static com.codeferm.periphery.mmio.Pin.PinState.ON;
-import java.io.FileInputStream;
-import java.io.IOException;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
-import java.util.Properties;
-import java.util.TreeMap;
 import java.util.concurrent.Callable;
-import java.util.regex.Pattern;
-import java.util.stream.Collectors;
 import org.apache.logging.log4j.LogManager;
 import picocli.CommandLine;
 
@@ -60,55 +47,19 @@ public class Perf implements Callable<Integer> {
     private int line = 203;
 
     /**
-     * Get pin mode.
-     *
-     * @param pin Pin.
-     * @return INPUT or OUTPUT.
-     */
-    public PinMode getMode(final Pin pin) {
-        final var value = new int[1];
-        Mmio.mmioRead32(pin.getMmioHadle(), pin.getConfigOffset(), value);
-        PinMode ret;
-        if ((value[0] & pin.getConfigMask()) == 0) {
-            ret = INPUT;
-        } else {
-            ret = OUTPUT;
-        }
-        return ret;
-    }
-
-    /**
-     * Set pin mode.
-     *
-     * @param pin Pin.
-     * @param value Pin mode.
-     */
-    public void setMode(final Pin pin, final PinMode value) {
-        final var reg = new int[1];
-        // Get current register value
-        Mmio.mmioRead32(pin.getMmioHadle(), pin.getConfigOffset(), reg);
-        if (value == INPUT) {
-            Mmio.mmioWrite32(pin.getMmioHadle(), pin.getConfigOffset(), reg[0] & (pin.getConfigMask()
-                    ^ 0xffffffff));
-        } else {
-            Mmio.mmioWrite32(pin.getMmioHadle(), pin.getConfigOffset(), reg[0] | pin.getConfigMask());
-        }
-    }
-
-    /**
      * Read pin value.
      *
      * @param pin Pin.
-     * @return ON or OFF.
+     * @return True = on, false = off..
      */
-    public PinState read(final Pin pin) {
+    public boolean read(final Pin pin) {
         final var value = new int[1];
-        Mmio.mmioRead32(pin.getMmioHadle(), pin.getDataOffset(), value);
-        PinState ret;
-        if ((value[0] & pin.getDataMask()) == 0) {
-            ret = OFF;
+        Mmio.mmioRead32(pin.getMmioHadle(), pin.getDataIn().getOffset(), value);
+        boolean ret;
+        if ((value[0] & pin.getDataIn().getMask()) == 0) {
+            ret = false;
         } else {
-            ret = ON;
+            ret = true;
         }
         return ret;
     }
@@ -119,14 +70,14 @@ public class Perf implements Callable<Integer> {
      * @param pin Pin.
      * @param value Pin mode.
      */
-    public void write(final Pin pin, final PinState value) {
+    public void write(final Pin pin, final boolean value) {
         final var reg = new int[1];
         // Get current register value
-        Mmio.mmioRead32(pin.getMmioHadle(), pin.getDataOffset(), reg);
-        if (value == OFF) {
-            Mmio.mmioWrite32(pin.getMmioHadle(), pin.getDataOffset(), reg[0] & (pin.getDataMask() ^ 0xffffffff));
+        Mmio.mmioRead32(pin.getMmioHadle(), pin.getDataIn().getOffset(), reg);
+        if (!value) {
+            Mmio.mmioWrite32(pin.getMmioHadle(), pin.getDataOut().getOffset(), reg[0] & (pin.getDataOut().getMask() ^ 0xffffffff));
         } else {
-            Mmio.mmioWrite32(pin.getMmioHadle(), pin.getDataOffset(), reg[0] | pin.getDataMask());
+            Mmio.mmioWrite32(pin.getMmioHadle(), pin.getDataOut().getOffset(), reg[0] | pin.getDataOut().getMask());
         }
     }
 
@@ -160,18 +111,19 @@ public class Perf implements Callable<Integer> {
      * @param samples How many samples to run.
      */
     public void perfGood(final Pin pin, final long samples) {
-        setMode(pin, OUTPUT);
-        logger.info(String.format("Running good MMIO write test with %d samples", samples));
-        final var start = Instant.now();
-        // Turn pin on and off, so we can see on a scope
-        for (var i = 0; i < samples; i++) {
-            write(pin, ON);
-            write(pin, OFF);
+        try (final var gpio = new Gpio(String.format("/dev/gpiochip%d", pin.getKey().getChip()), pin.getKey().getPin(), GPIO_DIR_OUT)) {
+            logger.info(String.format("Running good MMIO write test with %d samples", samples));
+            final var start = Instant.now();
+            // Turn pin on and off, so we can see on a scope
+            for (var i = 0; i < samples; i++) {
+                write(pin, true);
+                write(pin, false);
+            }
+            final var finish = Instant.now();
+            // Elapsed milliseconds
+            final var timeElapsed = Duration.between(start, finish).toMillis();
+            logger.info(String.format("%.2f KHz", ((double) samples / (double) timeElapsed)));
         }
-        final var finish = Instant.now();
-        // Elapsed milliseconds
-        final var timeElapsed = Duration.between(start, finish).toMillis();
-        logger.info(String.format("%.2f KHz", ((double) samples / (double) timeElapsed)));
     }
 
     /**
@@ -181,52 +133,56 @@ public class Perf implements Callable<Integer> {
      * @param samples How many samples to run.
      */
     public void perfBetter(final Pin pin, final long samples) {
-        setMode(pin, OUTPUT);
-        final var reg = new int[1];
-        final var offest = pin.getDataOffset();
-        final var mask = pin.getDataMask();
-        final var maskInv = mask ^ 0xffffffff;
-        logger.info(String.format("Running better MMIO write test with %d samples", samples));
-        final var start = Instant.now();
-        // Turn pin on and off, so we can see on a scope
-        for (var i = 0; i < samples; i++) {
-            Mmio.mmioRead32(pin.getMmioHadle(), offest, reg);
-            Mmio.mmioWrite32(pin.getMmioHadle(), offest, reg[0] | mask);
-            Mmio.mmioRead32(pin.getMmioHadle(), offest, reg);
-            Mmio.mmioWrite32(pin.getMmioHadle(), offest, reg[0] & maskInv);
+        try (final var gpio = new Gpio(String.format("/dev/gpiochip%d", pin.getKey().getChip()), pin.getKey().getPin(), GPIO_DIR_OUT)) {
+            final var reg = new int[1];
+            final var offest = pin.getDataOut().getOffset();
+            final var mask = pin.getDataOut().getMask();
+            final var maskInv = mask ^ 0xffffffff;
+            final var handle = pin.getMmioHadle();
+            logger.info(String.format("Running better MMIO write test with %d samples", samples));
+            final var start = Instant.now();
+            // Turn pin on and off, so we can see on a scope
+            for (var i = 0; i < samples; i++) {
+                Mmio.mmioRead32(handle, offest, reg);
+                Mmio.mmioWrite32(handle, offest, reg[0] | mask);
+                Mmio.mmioRead32(handle, offest, reg);
+                Mmio.mmioWrite32(handle, offest, reg[0] & maskInv);
+            }
+            final var finish = Instant.now();
+            // Elapsed milliseconds
+            final var timeElapsed = Duration.between(start, finish).toMillis();
+            logger.info(String.format("%.2f KHz", ((double) samples / (double) timeElapsed)));
         }
-        final var finish = Instant.now();
-        // Elapsed milliseconds
-        final var timeElapsed = Duration.between(start, finish).toMillis();
-        logger.info(String.format("%.2f KHz", ((double) samples / (double) timeElapsed)));
     }
 
     /**
-     * Performance test using raw MMIO and only reading register before writes.
+     * Performance test using raw MMIO and only reading register once before writes.
      *
      * @param pin Pin number.
      * @param samples How many samples to run.
      */
     public void perfBest(final Pin pin, final long samples) {
-        setMode(pin, OUTPUT);
-        final var reg = new int[1];
-        final var offest = pin.getDataOffset();
-        final var handle = pin.getMmioHadle();
-        // Only do read one time to get current value
-        Mmio.mmioRead32(handle, offest, reg);
-        final var on = reg[0] | pin.getDataMask();
-        final var off = reg[0] & (pin.getDataMask() ^ 0xffffffff);
-        logger.info(String.format("Running best MMIO write test with %d samples", samples));
-        final var start = Instant.now();
-        // Turn pin on and off, so we can see on a scope
-        for (var i = 0; i < samples; i++) {
-            Mmio.mmioWrite32(handle, offest, on);
-            Mmio.mmioWrite32(handle, offest, off);
+        try (final var gpio = new Gpio(String.format("/dev/gpiochip%d", pin.getKey().getChip()), pin.getKey().getPin(), GPIO_DIR_OUT)) {
+            final var reg = new int[1];
+            final var offest = pin.getDataOut().getOffset();
+            final var handle = pin.getMmioHadle();
+            // Only do read one time to get current value
+            Mmio.mmioRead32(handle, offest, reg);
+            final var on = reg[0] | pin.getDataOut().getMask();
+            final var off = reg[0] & (pin.getDataOut().getMask() ^ 0xffffffff);
+            logger.info(String.format("Running best MMIO write test with %d samples", samples));
+            final var start = Instant.now();
+            // Turn pin on and off, so we can see on a scope
+            // Turn pin on and off, so we can see on a scope
+            for (var i = 0; i < samples; i++) {
+                Mmio.mmioWrite32(handle, offest, on);
+                Mmio.mmioWrite32(handle, offest, off);
+            }
+            final var finish = Instant.now();
+            // Elapsed milliseconds
+            final var timeElapsed = Duration.between(start, finish).toMillis();
+            logger.info(String.format("%.2f KHz", ((double) samples / (double) timeElapsed)));
         }
-        final var finish = Instant.now();
-        // Elapsed milliseconds
-        final var timeElapsed = Duration.between(start, finish).toMillis();
-        logger.info(String.format("%.2f KHz", ((double) samples / (double) timeElapsed)));
     }
 
     /**

@@ -33,6 +33,10 @@ public class File {
     private final org.apache.logging.log4j.Logger logger = LogManager.getLogger(File.class);
 
     /**
+     * File description.
+     */
+    private String description;
+    /**
      * GPIO chips sometimes called banks
      */
     private List<Long> chips;
@@ -53,41 +57,21 @@ public class File {
      */
     private List<String> pinName;
     /**
-     * Port offset inside chip
+     * Chip group os on
      */
-    private List<Integer> portOffset;
+    private List<Integer> groupChip;
     /**
-     * Chip port os on
+     * Name of group
      */
-    private List<Integer> portChip;
+    private List<String> groupName;
     /**
-     * Name of port
+     * Data in register offset inside chip
      */
-    private List<String> portName;
+    private List<Integer> dataInOffset;
     /**
-     * Register offset inside chip
+     * Data out register offset inside chip
      */
-    private List<Integer> registerOffset;
-    /**
-     * Register name
-     */
-    private List<String> registerName;
-    /**
-     * Configuration register filter.
-     */
-    private String configFilter;
-    /**
-     * Data register filter.
-     */
-    private String dataFilter;
-    /**
-     * Pull register filter.
-     */
-    private String pullFilter;
-    /**
-     * File description.
-     */
-    private String description;
+    private List<Integer> dataOutOffset;
 
     /**
      * Default constructor.
@@ -95,11 +79,19 @@ public class File {
     public File() {
     }
 
+    public String getDescription() {
+        return description;
+    }
+
+    public void setDescription(String description) {
+        this.description = description;
+    }
+
     public List<Long> getChips() {
         return chips;
     }
 
-    public void setChips(final List<Long> chips) {
+    public void setChips(List<Long> chips) {
         this.chips = chips;
     }
 
@@ -107,7 +99,7 @@ public class File {
         return mmioSize;
     }
 
-    public void setMmioSize(final List<Long> mmioSize) {
+    public void setMmioSize(List<Long> mmioSize) {
         this.mmioSize = mmioSize;
     }
 
@@ -115,7 +107,7 @@ public class File {
         return pins;
     }
 
-    public void setPins(final List<Integer> pins) {
+    public void setPins(List<Integer> pins) {
         this.pins = pins;
     }
 
@@ -123,7 +115,7 @@ public class File {
         return pinChip;
     }
 
-    public void setPinChip(final List<Integer> pinChip) {
+    public void setPinChip(List<Integer> pinChip) {
         this.pinChip = pinChip;
     }
 
@@ -131,80 +123,40 @@ public class File {
         return pinName;
     }
 
-    public void setPinName(final List<String> pinName) {
+    public void setPinName(List<String> pinName) {
         this.pinName = pinName;
     }
 
-    public List<Integer> getPortOffset() {
-        return portOffset;
+    public List<Integer> getGroupChip() {
+        return groupChip;
     }
 
-    public void setPortOffset(final List<Integer> portOffset) {
-        this.portOffset = portOffset;
+    public void setGroupChip(List<Integer> groupChip) {
+        this.groupChip = groupChip;
     }
 
-    public List<Integer> getPortChip() {
-        return portChip;
+    public List<String> getGroupName() {
+        return groupName;
     }
 
-    public void setPortChip(final List<Integer> portChip) {
-        this.portChip = portChip;
+    public void setGroupName(List<String> groupName) {
+        this.groupName = groupName;
     }
 
-    public List<String> getPortName() {
-        return portName;
+    public List<Integer> getDataInOffset() {
+        return dataInOffset;
     }
 
-    public void setPortName(final List<String> portName) {
-        this.portName = portName;
+    public void setDataInOffset(List<Integer> dataInOffset) {
+        this.dataInOffset = dataInOffset;
     }
 
-    public List<Integer> getRegisterOffset() {
-        return registerOffset;
+    public List<Integer> getDataOutOffset() {
+        return dataOutOffset;
     }
 
-    public void setRegisterOffset(final List<Integer> registerOffset) {
-        this.registerOffset = registerOffset;
-    }
-
-    public List<String> getRegisterName() {
-        return registerName;
-    }
-
-    public void setRegisterName(final List<String> registerName) {
-        this.registerName = registerName;
-    }
-
-    public String getConfigFilter() {
-        return configFilter;
-    }
-
-    public void setConfigFilter(final String configFilter) {
-        this.configFilter = configFilter;
-    }
-
-    public String getDataFilter() {
-        return dataFilter;
-    }
-
-    public void setDataFilter(final String dataFilter) {
-        this.dataFilter = dataFilter;
-    }
-
-    public String getPullFilter() {
-        return pullFilter;
-    }
-
-    public void setPullFilter(final String pullFilter) {
-        this.pullFilter = pullFilter;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(final String description) {
-        this.description = description;
+    public void setDataOutOffset(List<Integer> dataOutOffset) {
+        this.dataOutOffset = dataOutOffset;
     }
 
     /**
@@ -293,20 +245,16 @@ public class File {
         final var properties = loadProperties(fileName);
         // Make sure properties loaded
         if (!properties.isEmpty()) {
+            description = properties.getProperty("description");
             chips = hexToLongList(properties.getProperty("chips"));
             mmioSize = decToLongList(properties.getProperty("chip.size"));
             pins = decToIntList(properties.getProperty("pins"));
             pinChip = decToIntList(properties.getProperty("pin.chip"));
             pinName = strToStrList(properties.getProperty("pin.name"));
-            portOffset = hexToIntList(properties.getProperty("port.offset"));
-            portChip = decToIntList(properties.getProperty("port.chip"));
-            portName = strToStrList(properties.getProperty("port.name"));
-            registerOffset = hexToIntList(properties.getProperty("register.offset"));
-            registerName = strToStrList(properties.getProperty("register.name"));
-            configFilter = properties.getProperty("config.filter");
-            dataFilter = properties.getProperty("data.filter");
-            pullFilter = properties.getProperty("pull.filter");
-            description = properties.getProperty("description");
+            groupChip = decToIntList(properties.getProperty("group.chip"));
+            groupName = strToStrList(properties.getProperty("group.name"));
+            dataInOffset = hexToIntList(properties.getProperty("data.in.offset"));
+            dataOutOffset = hexToIntList(properties.getProperty("data.out.offset"));
             // Create minimal pin Map with chip, pin and pin name
             for (int i = 0; i < pins.size(); i++) {
                 PinKey key = new PinKey(pinChip.get(i), pins.get(i));
@@ -328,10 +276,9 @@ public class File {
         final var properties = loadProperties(inFileName);
         try (final var writer = new BufferedWriter(new FileWriter(outFileName))) {
             writer.write(String.format(
-                    "#\n# Generated by %s on %s\n#\n# Format: pin.chip.number = port name, pin name, config name, "
-                    + "config offset, config mask, data name, data offset, data mask, pull, name, pull offset, pull up mask, "
-                    + "pull down mask\n#\n\n", this.getClass().getCanonicalName(), DateTimeFormatter.ISO_INSTANT.format(Instant.
-                    now())));
+                    "#\n# Generated by %s on %s\n#\n# Format: pin.chip.number = group name, pin name, data in name, "
+                    + "data in offset, data in mask, data out name, data out offset, data out mask\n#\n\n", this.
+                            getClass().getCanonicalName(), DateTimeFormatter.ISO_INSTANT.format(Instant.now())));
             writer.write(String.format("description = %s\nchips = %s\nchip.size = %s\n", properties.getProperty("description"),
                     properties.getProperty("chips"), properties.getProperty("chip.size")));
             // Write entry for each pin
@@ -339,10 +286,10 @@ public class File {
                 PinKey key = entry.getKey();
                 Pin value = entry.getValue();
                 writer.write(String.format(
-                        "pin.%d.%d = %s, %s, %s, 0x%02x, 0x%08x, %s, 0x%02x, 0x%08x, %s, 0x%02x, 0x%08x, 0x%08x\n",
-                        key.getChip(), key.getPin(), value.getPortName(), value.getName(), value.getConfigName(), value.
-                        getConfigOffset(), value.getConfigMask(), value.getDataName(), value.getDataOffset(), value.getDataMask(),
-                        value.getPullName(), value.getPullOffset(), value.getPullUpMask(), value.getPullDownMask()));
+                        "pin.%d.%d = %s, %s, %s, 0x%02x, 0x%08x, %s, 0x%02x, 0x%08x\n",
+                        key.getChip(), key.getPin(), value.getGroupName(), value.getName(), value.getDataIn().getName(), value.
+                        getDataIn().getOffset(), value.getDataIn().getMask(), value.getDataOut().getName(), value.getDataOut().
+                        getOffset(), value.getDataOut().getMask()));
             }
         } catch (IOException e) {
             logger.error(String.format("Error %s", e.getMessage()));
@@ -395,10 +342,9 @@ public class File {
             if (key[0].contains("pin")) {
                 final var value = ((String) entry.getValue()).split(",");
                 final var pinKey = new PinKey(Integer.parseInt(key[1]), Integer.parseInt(key[2]));
-                final var pin = new Pin(pinKey).setPortName(strToStr(value[0])).setName(strToStr(value[1])).setConfigName(
-                        strToStr(value[2])).setConfigOffset(hexToInt(value[3])).setConfigMask(hexToInt(value[4])).setDataName(
-                        strToStr(value[5])).setDataOffset(hexToInt(value[6])).setDataMask(hexToInt(value[7])).setPullName(strToStr(
-                        value[8])).setPullUpMask(hexToInt(value[9])).setPullDownMask(hexToInt(value[10]));
+                final var dataIn = new Register(strToStr(value[2]), hexToInt(value[3]), hexToInt(value[4]));
+                final var dataOut = new Register(strToStr(value[5]), hexToInt(value[6]), hexToInt(value[7]));
+                final var pin = new Pin(pinKey, strToStr(value[0]), strToStr(value[1]), dataIn, dataOut);
                 pinMap.put(pinKey, pin);
             }
         });

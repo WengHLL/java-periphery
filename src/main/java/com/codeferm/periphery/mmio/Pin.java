@@ -15,52 +15,88 @@ import java.util.Objects;
 public class Pin {
 
     /**
-     * Pin mode.
+     * Pin key.
      */
-    public enum PinMode {
-        INPUT, OUTPUT;
-    }
-
-    /**
-     * Pin state.
-     */
-    public enum PinState {
-        ON, OFF;
-    }
-
     private PinKey key;
+    /**
+     * Pin group name (port, package, etc.)
+     */
+    private String groupName;
+    /**
+     * Pin name.
+     */
     private String name;
-    private String portName;
-    private String configName;
-    private int configOffset;
-    private int configMask;
-    private String dataName;
-    private int dataOffset;
-    private int dataMask;
-    private String pullName;
-    private int pullOffset;
-    private int pullUpMask;
-    private int pullDownMask;
+    /**
+     * Pin data input register.
+     */
+    private Register dataIn;
+    /**
+     * Pin data output register.
+     */
+    private Register dataOut;
+    /**
+     * MMIO handle.
+     */
     private long mmioHadle;
 
+    /**
+     * Default constructor.
+     */
     public Pin() {
     }
 
-    public Pin(PinKey key) {
+    /**
+     * Pin key only constructor.
+     *
+     * @param key Pin key.
+     */
+    public Pin(final PinKey key) {
         this.key = key;
     }
 
-    public Pin(PinKey key, String name) {
+    /**
+     * Pin key and pin name constructor.
+     *
+     * @param key Pin key.
+     * @param name Pin name.
+     */
+    public Pin(final PinKey key, final String name) {
         this.key = key;
         this.name = name;
+    }
+
+    /**
+     * All fields constructor.
+     *
+     * @param key Pin key.
+     * @param groupName Group name.
+     * @param name Pin name.
+     * @param dataIn Pin data input register.
+     * @param dataOut Pin data output register.
+     */
+    public Pin(PinKey key, String groupName, String name, Register dataIn, Register dataOut) {
+        this.key = key;
+        this.groupName = groupName;
+        this.name = name;
+        this.dataIn = dataIn;
+        this.dataOut = dataOut;
     }
 
     public PinKey getKey() {
         return key;
     }
 
-    public Pin setKey(PinKey key) {
+    public Pin setKey(final PinKey key) {
         this.key = key;
+        return this;
+    }
+
+    public String getGroupName() {
+        return groupName;
+    }
+
+    public Pin setGroupName(final String groupName) {
+        this.groupName = groupName;
         return this;
     }
 
@@ -68,107 +104,26 @@ public class Pin {
         return name;
     }
 
-    public Pin setName(String name) {
+    public Pin setName(final String name) {
         this.name = name;
         return this;
     }
 
-    public String getPortName() {
-        return portName;
+    public Register getDataIn() {
+        return dataIn;
     }
 
-    public Pin setPortName(String portName) {
-        this.portName = portName;
+    public Pin setDataIn(final Register dataIn) {
+        this.dataIn = dataIn;
         return this;
     }
 
-    public String getConfigName() {
-        return configName;
+    public Register getDataOut() {
+        return dataOut;
     }
 
-    public Pin setConfigName(String configName) {
-        this.configName = configName;
-        return this;
-    }
-
-    public int getConfigOffset() {
-        return configOffset;
-    }
-
-    public Pin setConfigOffset(int configOffset) {
-        this.configOffset = configOffset;
-        return this;
-    }
-
-    public int getConfigMask() {
-        return configMask;
-    }
-
-    public Pin setConfigMask(int configMask) {
-        this.configMask = configMask;
-        return this;
-    }
-
-    public String getDataName() {
-        return dataName;
-    }
-
-    public Pin setDataName(String dataName) {
-        this.dataName = dataName;
-        return this;
-    }
-
-    public int getDataOffset() {
-        return dataOffset;
-    }
-
-    public Pin setDataOffset(int dataOffset) {
-        this.dataOffset = dataOffset;
-        return this;
-    }
-
-    public int getDataMask() {
-        return dataMask;
-    }
-
-    public Pin setDataMask(int dataMask) {
-        this.dataMask = dataMask;
-        return this;
-    }
-
-    public String getPullName() {
-        return pullName;
-    }
-
-    public Pin setPullName(String pullName) {
-        this.pullName = pullName;
-        return this;
-    }
-
-    public int getPullOffset() {
-        return pullOffset;
-    }
-
-    public Pin setPullOffset(int pullOffset) {
-        this.pullOffset = pullOffset;
-        return this;
-    }
-
-    public int getPullUpMask() {
-        return pullUpMask;
-    }
-
-    public Pin setPullUpMask(int pullUpMask) {
-        this.pullUpMask = pullUpMask;
-        return this;
-    }
-
-    public int getPullDownMask() {
-        return pullDownMask;
-    }
-
-    public Pin setPullDownMask(int pullDownMask) {
-        this.pullDownMask = pullDownMask;
+    public Pin setDataOut(final Register dataOut) {
+        this.dataOut = dataOut;
         return this;
     }
 
@@ -176,31 +131,34 @@ public class Pin {
         return mmioHadle;
     }
 
-    public Pin setMmioHadle(long mmioHadle) {
+    public Pin setMmioHadle(final long mmioHadle) {
         this.mmioHadle = mmioHadle;
         return this;
     }
 
+    /**
+     * Object hash code.
+     *
+     * @return Hash code.
+     */
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 41 * hash + Objects.hashCode(this.key);
-        hash = 41 * hash + Objects.hashCode(this.name);
-        hash = 41 * hash + Objects.hashCode(this.portName);
-        hash = 41 * hash + Objects.hashCode(this.configName);
-        hash = 41 * hash + this.configOffset;
-        hash = 41 * hash + this.configMask;
-        hash = 41 * hash + Objects.hashCode(this.dataName);
-        hash = 41 * hash + this.dataOffset;
-        hash = 41 * hash + this.dataMask;
-        hash = 41 * hash + Objects.hashCode(this.pullName);
-        hash = 41 * hash + this.pullOffset;
-        hash = 41 * hash + this.pullUpMask;
-        hash = 41 * hash + this.pullDownMask;
-        hash = 41 * hash + (int) (this.mmioHadle ^ (this.mmioHadle >>> 32));
+        hash = 89 * hash + Objects.hashCode(this.key);
+        hash = 89 * hash + Objects.hashCode(this.groupName);
+        hash = 89 * hash + Objects.hashCode(this.name);
+        hash = 89 * hash + Objects.hashCode(this.dataIn);
+        hash = 89 * hash + Objects.hashCode(this.dataOut);
+        hash = 89 * hash + (int) (this.mmioHadle ^ (this.mmioHadle >>> 32));
         return hash;
     }
 
+    /**
+     * Object equals.
+     *
+     * @param obj Object to compare to.
+     * @return True if equal.
+     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -213,56 +171,35 @@ public class Pin {
             return false;
         }
         final Pin other = (Pin) obj;
-        if (this.configOffset != other.configOffset) {
-            return false;
-        }
-        if (this.configMask != other.configMask) {
-            return false;
-        }
-        if (this.dataOffset != other.dataOffset) {
-            return false;
-        }
-        if (this.dataMask != other.dataMask) {
-            return false;
-        }
-        if (this.pullOffset != other.pullOffset) {
-            return false;
-        }
-        if (this.pullUpMask != other.pullUpMask) {
-            return false;
-        }
-        if (this.pullDownMask != other.pullDownMask) {
-            return false;
-        }
         if (this.mmioHadle != other.mmioHadle) {
+            return false;
+        }
+        if (!Objects.equals(this.groupName, other.groupName)) {
             return false;
         }
         if (!Objects.equals(this.name, other.name)) {
             return false;
         }
-        if (!Objects.equals(this.portName, other.portName)) {
-            return false;
-        }
-        if (!Objects.equals(this.configName, other.configName)) {
-            return false;
-        }
-        if (!Objects.equals(this.dataName, other.dataName)) {
-            return false;
-        }
-        if (!Objects.equals(this.pullName, other.pullName)) {
-            return false;
-        }
         if (!Objects.equals(this.key, other.key)) {
+            return false;
+        }
+        if (!Objects.equals(this.dataIn, other.dataIn)) {
+            return false;
+        }
+        if (!Objects.equals(this.dataOut, other.dataOut)) {
             return false;
         }
         return true;
     }
 
+    /**
+     * String representation of Object.
+     *
+     * @return String of Object fields.
+     */
     @Override
     public String toString() {
-        return "Pin{" + "key=" + key + ", name=" + name + ", portName=" + portName + ", configName=" + configName
-                + ", configOffset=" + configOffset + ", configMask=" + configMask + ", dataName=" + dataName + ", dataOffset="
-                + dataOffset + ", dataMask=" + dataMask + ", pullName=" + pullName + ", pullOffset=" + pullOffset + ", pullUpMask="
-                + pullUpMask + ", pullDownMask=" + pullDownMask + ", mmioHadle=" + mmioHadle + '}';
+        return "Pin{" + "key=" + key + ", groupName=" + groupName + ", name=" + name + ", dataIn=" + dataIn + ", dataOut=" + dataOut
+                + ", mmioHadle=" + mmioHadle + '}';
     }
 }

@@ -14,13 +14,28 @@ import java.util.Comparator;
  */
 public class PinKey implements Comparable<PinKey> {
 
+    /**
+     * Pin chip.
+     */
     private int chip;
+    /**
+     * Pin number.
+     */
     private int pin;
 
+    /**
+     * Default constructor.
+     */
     public PinKey() {
     }
 
-    public PinKey(int chip, int pin) {
+    /**
+     * All fields constructor.
+     *
+     * @param chip Pin chip.
+     * @param pin Pin number.
+     */
+    public PinKey(final int chip, final int pin) {
         this.chip = chip;
         this.pin = pin;
     }
@@ -29,7 +44,7 @@ public class PinKey implements Comparable<PinKey> {
         return chip;
     }
 
-    public PinKey setChip(int chip) {
+    public PinKey setChip(final int chip) {
         this.chip = chip;
         return this;
     }
@@ -38,17 +53,29 @@ public class PinKey implements Comparable<PinKey> {
         return pin;
     }
 
-    public PinKey setPin(int pin) {
+    public PinKey setPin(final int pin) {
         this.pin = pin;
         return this;
     }
 
+    /**
+     * Compare to used for sorting.
+     *
+     * @param key Pin key to compare.
+     * @return A negative integer, zero, or a positive integer as this object is less than, equal to, or greater than the specified
+     * object.
+     */
     @Override
     public int compareTo(final PinKey key) {
         return Comparator.comparing(PinKey::getChip).thenComparing(PinKey::getPin).compare(this, key);
 
     }
 
+    /**
+     * Object hash code.
+     *
+     * @return Hash code.
+     */
     @Override
     public int hashCode() {
         int hash = 7;
@@ -57,6 +84,12 @@ public class PinKey implements Comparable<PinKey> {
         return hash;
     }
 
+    /**
+     * Object equals.
+     *
+     * @param obj Object to compare to.
+     * @return True if equal.
+     */
     @Override
     public boolean equals(Object obj) {
         if (this == obj) {
@@ -78,6 +111,11 @@ public class PinKey implements Comparable<PinKey> {
         return true;
     }
 
+    /**
+     * String representation of Object.
+     *
+     * @return String of Object fields.
+     */
     @Override
     public String toString() {
         return "PinKey{" + "chip=" + chip + ", pin=" + pin + '}';
