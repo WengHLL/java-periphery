@@ -38,10 +38,12 @@ bindings. The idea is to have consistent APIs across
 [C](https://github.com/vsergeev/c-periphery),
 [Python](https://github.com/vsergeev/python-periphery),
 [Lua](https://github.com/vsergeev/lua-periphery) and JVM languages without having
-to use board specific drivers or the deprecated sysfs interface for GPIO. The
-possibility of using other JVM based languages such as Groovy, Kotlin, Scala,
-etc. opens up language opportunities that do not currently exist in the
-IoT space.
+to use one off board specific drivers, providers,
+[deprecated wiringPi](http://wiringpi.com/wiringpi-deprecated) or the
+[deprecated sysfs](https://www.kernel.org/doc/html/latest/admin-guide/gpio/sysfs.html)
+interface for GPIO. The possibility of using other JVM based languages such as
+Groovy, Kotlin, Scala, etc. opens up language opportunities that do not
+currently exist in the IoT space.
 * Why Linux userspace? This is really the only way to get cross platform
 libraries to work since most SBCs have different chip sets. The trade off is
 performance compared to native C written to specific chip sets. However, since
@@ -66,12 +68,12 @@ to configure various devices. Userspace devices are exposed through /dev or
 devices to be exposed to userspace for your Linux distribution and SBC model.
 Check each log in scripts directory to be sure there were no errors after running
 install.sh.
-* Since linux 4.8 the GPIO sysfs interface is deprecated. Userspace should use
-the character device instead.
+* Since linux 4.8 the GPIO sysfs interface is [deprecated](https://www.kernel.org/doc/html/latest/admin-guide/gpio/sysfs.html).
+Userspace should use the character device instead.
 * I have tested NanoPi Duo v1.1 for 32 bit and NanoPi Neo 2 Plus for 64 bit using
 the latest Armbian release. The ability to switch seemlessly between 32 and 64
 bit platforms gives you a wide range of SBC choices. I'm currently testing with
-Ubuntu 20.04 LTS Focal Fossa using 5.6 kernel.
+Ubuntu 20.04 LTS Focal Fossa using 5.9 kernel.
 
 ## Armbian and built in buttons
 On the NanoPi Duo the built in button causes it to shutdown by default. You can
@@ -147,7 +149,7 @@ correct include path. After the install.sh script completes:
 * `sudo armbian-config` Software, Headers_install
 * `grep -R -i "GPIOHANDLE_REQUEST_BIAS_DISABLE" /usr/src`
 * `cd ~/java-periphery`
-* `mvn clean install "-Dcflags=-Dcflags=-I/usr/src/linux-headers-5.8.16-sunxi/include/uapi -I/usr/src/linux-headers-5.8.16-sunxi/include"` replace with your paths
+* `mvn clean install "-Dcflags=-I/usr/src/linux-headers-5.8.16-sunxi/include/uapi -I/usr/src/linux-headers-5.8.16-sunxi/include"` replace with your paths
 
 ## High performance GPIO using MMIO
 I have created a generic way to achieve fast GPIO for times when performance (bit
@@ -170,12 +172,11 @@ NanoPi Neo Plus2 (H5) example:
 
 As you can see above the same performance test code works on a 32 bit H2+ and a
 64 bit H5 CPU. This means almost all Allwinner CPUs can be easily supported with
-the right input file. I still need to test other boards, but this is promising
-and probably the only high performance GPIO code that is truly cross platform.
-No custom adapters or other one off code is required currently. Also, I use the
-same pin numbers as the GPIO device, so no goofy wiringPi or BCM pin numbering.
-Keep in mind that only one core is used, so CPU will never exceed 25% on a quad
-core system.
+the right input file. This is probably the only high performance GPIO code that
+is truly cross platform. No custom adapters or other one off code is required
+currently. Also, I use the same pin numbers as the GPIO device, so no goofy
+wiringPi or BCM pin numbering. Keep in mind that only one core is used, so CPU
+will never exceed 25% on a quad core system.
 
 If you want to map your own board you start by getting the data sheet and
 finding the data registers. I've written a little memory tool
@@ -197,6 +198,22 @@ Output:
 ```
 
 Note the bias error is due to no compiling with latest kernel headers.
+
+## GPIO Performance using Perf
+Note that most performance tests focus on writes and not CPU overhead, so it's
+hard to compare. Technically you will actually be doing something like bit
+banging to simulate a protocol, so you need extra CPU bandwidth to do that.
+Please note write frequency is based on square wave (rapid on/off). You can
+increase clock speed to improve performance on some boards. I used the Armbian
+defaults.
+
+|SBC              |OS           |CPU Freq|GPIOD Write KHz|MMIO Write KHz|Average CPU|
+| --------------- | ----------- | ------ | ------------- | ------------ | --------- |
+|Odroid XU4       |Armbian Focal|2.0 GHz | 96            |195           |14%        |
+|Nano Pi Duo v1.0 |Armbian Focal|1.0 GHz |242            |1790          |25%        |
+|Nano Pi M1       |Armbian Focal|1.2 GHz |325            |413           |25%        |
+|Nano Pi Neo Plus2|Armbian Focal|1.0 GHz |339            |2341          |25%        |
+|Odroid C2        |Armbian Focal|1.5 GHz |365            |2346          |25%        |
 
 ## How GPIO pins are mapped
 This is based on testing on a NanoPi Duo. gpiochip0 starts at 0 and gpiochip1
@@ -239,19 +256,6 @@ After bulding Java Periphery simpily add the following artifact:
 <artifactId>java-periphery</artifactId>
 <version>1.0.0-SNAPSHOT</version>
 ```
-
-## GPIO Performance using Perf
-Note that most performance tests focus on writes and not CPU overhead, so it's
-hard to compare. Technically you will actually be doing something like bit
-banging to simulate a protocol, so you need extra CPU bandwidth to do that.
-Please note write frequency is based on square wave (rapid on/off).
-
-|SBC              |OS           |CPU Freq|GPIOD Write KHz|MMIO Write KHz|Average CPU|
-| --------------- | ----------- | ------ | ------------- | ------------ | --------- |
-|Odroid XU4       |Armbian Focal|2.0 GHz | 96            |195           |14%        |
-|Nano Pi Duo v1.0 |Armbian Focal|1.0 GHz |250            |318           |27%        |
-|Nano Pi Neo Plus2|Armbian Focal|1.0 GHz |325            |413           |27%        |
-|Odroid C2        |Armbian Focal|1.5 GHz |365            |2346          |25%        |
 
 ## Zulu Mission Control
 [Zulu Mission Control](https://docs.azul.com/zmc/ZMCUserGuide/Title.htm) allows
