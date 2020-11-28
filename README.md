@@ -193,7 +193,8 @@ Output:
 11:55:39.540 [main] INFO  MemScan - Mode difference found at offset 0x00000004 before 0x80003ef7 after 0x80003cf7 difference 0x00000200
 11:55:39.543 [main] INFO  MemScan - Data difference found at offset 0x00000000 before 0xa0003cf7 after 0xa2003cf7 difference 0x02000000
 11:55:39.545 [main] INFO  MemScan - Data difference found at offset 0x00000004 before 0x80003cf7 after 0x80003ef7 difference 0x00000200
-11:55:39.548 [main] ERROR MemScan - Device 0 line   9 Error Kernel version does not support configuring GPIO line bias```
+11:55:39.548 [main] ERROR MemScan - Device 0 line   9 Error Kernel version does not support configuring GPIO line bias
+```
 
 Note the bias error is due to no compiling with latest kernel headers.
 
