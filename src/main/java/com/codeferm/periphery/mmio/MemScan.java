@@ -85,8 +85,14 @@ public class MemScan implements Callable<Integer> {
     public void listDiff(final List<Integer> list1, final List<Integer> list2, final String text) {
         for (int i = 0; i < list1.size(); i++) {
             if (!list1.get(i).equals(list2.get(i))) {
+                int diff;
+                if (list1.get(i) > list2.get(i)) {
+                    diff = list1.get(i) - list2.get(i);
+                } else {
+                    diff = list2.get(i) - list1.get(i);
+                }
                 logger.info(String.format("%s difference found at offset 0x%08x before 0x%08x after 0x%08x difference 0x%08x", text,
-                        i * 4, list1.get(i), list2.get(i), list2.get(i) - list1.get(i)));
+                        i * 4, list1.get(i), list2.get(i), diff));
             }
         }
     }
@@ -96,18 +102,17 @@ public class MemScan implements Callable<Integer> {
      *
      * @param mmioHandle MMIO handle.
      */
-    public void detectConfig(final long mmioHandle) {
+    public void detectMode(final long mmioHandle) {
         final var dev = String.format("/dev/gpiochip%d", device);
         // Set pin for input, output and look for delta
         try (final var gpio = new Gpio(dev, line, new Gpio.GpioConfig().setBias(GPIO_BIAS_DEFAULT).setDirection(GPIO_DIR_IN).setDrive(
                 GPIO_DRIVE_DEFAULT).setEdge(GPIO_EDGE_NONE).setInverted(false).setLabel(cString(
                 MemScan.class.getSimpleName())))) {
-            Gpio.gpioSetDirection(gpio.getHandle(), GPIO_DIR_IN);
             final var list1 = getRegValues(mmioHandle);
             Gpio.gpioSetDirection(gpio.getHandle(), GPIO_DIR_OUT);
             final var list2 = getRegValues(mmioHandle);
             // Show the register delta
-            listDiff(list1, list2, "Configuration");
+            listDiff(list1, list2, "Mode");
         } catch (RuntimeException e) {
             logger.error(String.format("Device %d line %3d Error %s", device, line, e.getMessage()));
         }
@@ -172,7 +177,7 @@ public class MemScan implements Callable<Integer> {
         var exitCode = 0;
         logger.debug(String.format("Memory address 0x%08x words 0x%08x", address, words));
         try (final var mmio = new Mmio(address, words * 4)) {
-            detectConfig(mmio.getHandle());
+            detectMode(mmio.getHandle());
             detectData(mmio.getHandle());
             detectPull(mmio.getHandle());
         } catch (RuntimeException e) {
