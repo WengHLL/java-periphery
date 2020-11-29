@@ -141,15 +141,16 @@ comment out `<configureArgs>` in the `hawtjni-maven-plugin` section of the POM.
 * Check various log files if you have issues running the demo code. Something
 could have gone wrong during the build/bindings generation processes.
 
-### Build java-periphery with custom CFLAGS
-The gcc default include paths usually do not point to the latest headers. In
-order to use the latest features of c-periphery you will need to use the
-correct include path. After the install.sh script completes:
-* `uname -a` to get kernel version
+### Build java-periphery with proper gpio.h
+The gcc default include paths usually do not point to the latest gpio.h header.
+In order to use the latest features of c-periphery you will need to use the
+correct gpio.h include. After the install.sh script completes:
 * `sudo armbian-config` Software, Headers_install
 * `grep -R -i "GPIOHANDLE_REQUEST_BIAS_DISABLE" /usr/src`
+* `mkdir -p $HOME/include/linux`
+* `cp /usr/src/linux-headers-5.9.11-sunxi/include/uapi/linux/gpio.h $HOME/include/linux/.` (use actual path)
 * `cd ~/java-periphery`
-* `mvn clean install "-Dcflags=-I/usr/src/linux-headers-5.8.16-sunxi/include/uapi -I/usr/src/linux-headers-5.8.16-sunxi/include"` replace with your paths
+* `mvn clean install "-Dcflags=-I$HOME/include"`
 
 ## High performance GPIO using MMIO
 I have created a generic way to achieve fast GPIO for times when performance (bit
