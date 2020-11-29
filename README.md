@@ -38,12 +38,12 @@ bindings. The idea is to have consistent APIs across
 [C](https://github.com/vsergeev/c-periphery),
 [Python](https://github.com/vsergeev/python-periphery),
 [Lua](https://github.com/vsergeev/lua-periphery) and JVM languages without having
-to use one off board specific drivers, providers,
+to use one off board specific drivers, 
 [deprecated wiringPi](http://wiringpi.com/wiringpi-deprecated) or the
 [deprecated sysfs](https://www.kernel.org/doc/html/latest/admin-guide/gpio/sysfs.html)
-interface for GPIO. The possibility of using other JVM based languages such as
-Groovy, Kotlin, Scala, etc. opens up language opportunities that do not
-currently exist in the IoT space.
+interface. The possibility of using other JVM based languages such as Groovy,
+Kotlin, Scala, etc. opens up language opportunities that do not currently exist
+in the IoT space.
 * Why Linux userspace? This is really the only way to get cross platform
 libraries to work since most SBCs have different chip sets. The trade off is
 performance compared to native C written to specific chip sets. However, since
@@ -176,8 +176,8 @@ As you can see above the same performance test code works on a 32 bit H2+ and a
 the right input file. This is probably the only high performance GPIO code that
 is truly cross platform. No custom adapters or other one off code is required
 currently. Also, I use the same pin numbers as the GPIO device, so no goofy
-wiringPi or BCM pin numbering. Keep in mind that only one core is used, so CPU
-will never exceed 25% on a quad core system.
+wiringPi or BCM pin numbering. Keep in mind that only one core is used, so the 
+CPU will never exceed 25% on a quad core system.
 
 If you want to map your own board you start by getting the data sheet and
 finding the data registers. I've written a little memory tool
@@ -198,7 +198,7 @@ Output:
 11:55:39.548 [main] ERROR MemScan - Device 0 line   9 Error Kernel version does not support configuring GPIO line bias
 ```
 
-Note the bias error is due to no compiling with latest kernel headers.
+Note the bias error is due to no compiling with latest gpio.h header.
 
 ## GPIO Performance using Perf
 Note that most performance tests focus on writes and not CPU overhead, so it's
@@ -210,11 +210,11 @@ defaults.
 
 |SBC              |OS           |CPU Freq|GPIOD Write KHz|MMIO Write KHz|Average CPU|
 | --------------- | ----------- | ------ | ------------- | ------------ | --------- |
-|Odroid XU4       |Armbian Focal|2.0 GHz |TODO           |TODO          |TODO       |
 |Nano Pi Duo v1.0 |Armbian Focal|1.0 GHz |242            |1790          |25%        |
 |Nano Pi M1       |Armbian Focal|1.2 GHz |320            |2355          |25%        |
 |Nano Pi Neo Plus2|Armbian Focal|1.0 GHz |339            |2341          |25%        |
 |Odroid C2        |Armbian Focal|1.5 GHz |365            |2346          |25%        |
+|Odroid XU4       |Armbian Focal|2.0 GHz | 44            | 300          |12%        |
 
 ## How GPIO pins are mapped
 This is based on testing on a NanoPi Duo. gpiochip0 starts at 0 and gpiochip1

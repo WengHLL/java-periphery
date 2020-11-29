@@ -108,9 +108,9 @@ public class Gen implements Callable<Integer> {
      * @param pin Pin DTO.
      * @param mmioHandle MMIO handles.
      * @param groupChip Chips ports are on.
-     * @param groupName
-     * @param dataInOffset
-     * @param dataOutOffset
+     * @param groupName Pin group names.
+     * @param dataInOffset Data register in offsets.
+     * @param dataOutOffset Data register out offsets.
      */
     public void setDataReg(final Pin pin, final List<Long> mmioHandle, final List<Integer> groupChip, final List<String> groupName,
             final List<Integer> dataInOffset, final List<Integer> dataOutOffset) {
@@ -131,11 +131,11 @@ public class Gen implements Callable<Integer> {
                         valueDiff(list1.get(reg), list2.get(reg)))).setDataOut(new Register("OUT", dataOutOffset.get(reg),
                         valueDiff(list1.get(reg), list2.get(reg))));
             } else {
-                logger.warn(String.format("Chip %d Pin %3d data register change not detected", pin.getKey().getChip(),
+                logger.warn(String.format("Chip %d Pin %d data register change not detected", pin.getKey().getChip(),
                         pin.getKey().getPin()));
             }
         } catch (RuntimeException e) {
-            logger.error(String.format("Chip %d Pin %3d Error %s", pin.getKey().getChip(), pin.getKey().getPin(), e.getMessage()));
+            logger.error(String.format("Chip %d Pin %d Error %s", pin.getKey().getChip(), pin.getKey().getPin(), e.getMessage()));
         }
     }
 
@@ -160,8 +160,8 @@ public class Gen implements Callable<Integer> {
             }
             // Set register offset and mask for each pin
             pinMap.entrySet().stream().map((entry) -> entry.getValue()).forEachOrdered((value) -> {
-                setDataReg(value, mmioHandle, file.getGroupChip(), file.getGroupName(), file.getDataInOffset(), file.
-                        getDataOutOffset());
+                setDataReg(value, mmioHandle, file.getGroupChip(), file.getGroupName(), file.getDataInOffset(),
+                        file.getDataOutOffset());
             });
             // Generate properties file
             file.genProperties(pinMap, inFileName, outFileName);

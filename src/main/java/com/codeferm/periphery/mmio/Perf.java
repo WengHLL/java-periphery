@@ -8,8 +8,7 @@ import static com.codeferm.periphery.Gpio.GPIO_DIR_OUT;
 import com.codeferm.periphery.Mmio;
 import java.time.Duration;
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
 import org.apache.logging.log4j.LogManager;
@@ -197,11 +196,12 @@ public class Perf implements Callable<Integer> {
         final var file = new File();
         // Build pin Map
         final Map<PinKey, Pin> pinMap = file.loadPinMap(inFileName);
-        final List<Long> mmioHandle = new ArrayList<>();
+        // MMIO handle map based on GPIO dev key
+        final Map<Integer, Long> mmioHandle = new HashMap<>();
         // Open MMIO for each chip
         for (int i = 0; i < file.getChips().size(); i++) {
             final var mmio = new Mmio(file.getChips().get(i), file.getMmioSize().get(i));
-            mmioHandle.add(mmio.getHandle());
+            mmioHandle.put(file.getGpioDev().get(i), mmio.getHandle());
         }
         // Set MMIO handle for each pin
         pinMap.entrySet().forEach((entry) -> {
@@ -212,8 +212,9 @@ public class Perf implements Callable<Integer> {
         perfGood(pin, 10000000);
         perfBetter(pin, 10000000);
         perfBest(pin, 10000000);
-        mmioHandle.forEach((handle) -> {
-            Mmio.mmioClose(handle);
+        // Close all MMIO handles
+        mmioHandle.entrySet().forEach((entry) -> {
+            Mmio.mmioClose(entry.getValue());
         });
         return exitCode;
     }
