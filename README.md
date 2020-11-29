@@ -28,7 +28,7 @@ try (final var spi = new Spi("/dev/spidev1.0", 0, 500000)) {
 }
 ```
 
-![Title](images/duo.png)
+![Duo](images/duo.png)
 
 Behold the FrankenDuo which is used to test all Java Periphery features.
 
@@ -143,7 +143,7 @@ could have gone wrong during the build/bindings generation processes.
 
 ### Build java-periphery with proper gpio.h
 The gcc default include paths usually do not point to the latest gpio.h header.
-In order to use the latest features of c-periphery you will need to use the
+In order to use the latest features in c-periphery you will need to use the
 correct gpio.h include. After the install.sh script completes:
 * `sudo armbian-config` Software, Headers_install
 * `grep -R -i "GPIOHANDLE_REQUEST_BIAS_DISABLE" /usr/src`
@@ -212,7 +212,7 @@ defaults.
 | --------------- | ----------- | ------ | ------------- | ------------ | --------- |
 |Odroid XU4       |Armbian Focal|2.0 GHz |TODO           |TODO          |TODO       |
 |Nano Pi Duo v1.0 |Armbian Focal|1.0 GHz |242            |1790          |25%        |
-|Nano Pi M1       |Armbian Focal|1.2 GHz |310            |2355          |25%        |
+|Nano Pi M1       |Armbian Focal|1.2 GHz |320            |2355          |25%        |
 |Nano Pi Neo Plus2|Armbian Focal|1.0 GHz |339            |2341          |25%        |
 |Odroid C2        |Armbian Focal|1.5 GHz |365            |2346          |25%        |
 
