@@ -215,6 +215,7 @@ defaults.
 |Nano Pi Neo Plus2|Armbian Focal|1.0 GHz |339            |2341          |25%        |
 |Odroid C2        |Armbian Focal|1.5 GHz |365            |2346          |25%        |
 |Odroid XU4       |Armbian Focal|2.0 GHz | 44            | 300          |12%        |
+|Raspberry Pi 3   |Ubuntu Focal |1.0 2Hz |119            |4541          |25%        |
 
 ## How GPIO pins are mapped
 This is based on testing on a NanoPi Duo. gpiochip0 starts at 0 and gpiochip1
