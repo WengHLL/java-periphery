@@ -324,7 +324,8 @@ public class File {
     public int hexToInt(final String str) {
         var i = -1;
         if (str != null && !str.toLowerCase().contains("null")) {
-            i = Integer.decode(str.trim());
+            // Trim and remove 0x before converting to int (handles values >= 0x80000000 too)
+            i = (int)Long.parseLong(str.trim().substring(2), 16);
         }
         return i;
     }
