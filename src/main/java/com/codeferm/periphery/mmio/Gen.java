@@ -173,7 +173,7 @@ public class Gen implements Callable<Integer> {
             final List<Long> mmioHandle = new ArrayList<>();
             // Open MMIO for each chip
             for (int i = 0; i < file.getChips().size(); i++) {
-                final var mmio = new Mmio(file.getChips().get(i), file.getMmioSize().get(i));
+                final var mmio = new Mmio(file.getChips().get(i), file.getMmioSize().get(i), file.getMemPath());
                 mmioHandle.add(mmio.getHandle());
             }
             // Set register offset and mask for each pin

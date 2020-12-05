@@ -194,7 +194,7 @@ public class Perf implements Callable<Integer> {
         final Map<Integer, Long> mmioHandle = new HashMap<>();
         // Open MMIO for each chip
         for (int i = 0; i < file.getChips().size(); i++) {
-            final var mmio = new Mmio(file.getChips().get(i), file.getMmioSize().get(i));
+            final var mmio = new Mmio(file.getChips().get(i), file.getMmioSize().get(i), file.getMemPath());
             mmioHandle.put(file.getGpioDev().get(i), mmio.getHandle());
         }
         // Set MMIO handle for each pin
