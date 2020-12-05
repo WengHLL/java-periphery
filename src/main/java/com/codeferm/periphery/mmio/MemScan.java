@@ -39,6 +39,11 @@ public class MemScan implements Callable<Integer> {
      */
     private final org.apache.logging.log4j.Logger logger = LogManager.getLogger(MemScan.class);
     /**
+     * MMIO path.
+     */
+    @CommandLine.Option(names = {"-p", "--path"}, description = "Path defaults to /dev/mem")
+    private String path = "/dev/mem";
+    /**
      * Memory address.
      */
     @CommandLine.Option(names = {"-a", "--address"}, description = "Memorry address defaults to 0x00")
@@ -176,7 +181,7 @@ public class MemScan implements Callable<Integer> {
     public Integer call() throws InterruptedException {
         var exitCode = 0;
         logger.debug(String.format("Memory address 0x%08x words 0x%08x", address, words));
-        try (final var mmio = new Mmio(address, words * 4)) {
+        try (final var mmio = new Mmio(address, words * 4, path)) {
             detectMode(mmio.getHandle());
             detectData(mmio.getHandle());
             detectPull(mmio.getHandle());
