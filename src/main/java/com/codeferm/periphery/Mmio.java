@@ -80,6 +80,28 @@ public class Mmio implements AutoCloseable {
     }
 
     /**
+     * Map the region of physical memory at the specified base address and size, using the specified memory character device. This
+     * open function can be used with sandboxed memory character devices, e.g. /dev/gpiomem.
+     *
+     * @param base Doesn't need be aligned to a page boundary.
+     * @param size Doesn't need be aligned to a page boundary.
+     * @param path MMIO path /dev/mem, /dev/gpiomem, etc.
+     */
+    public Mmio(final long base, final long size, final String path) {
+        // Allocate handle
+        handle = mmioNew();
+        if (handle == 0) {
+            throw new RuntimeException("Handle cannot be NULL");
+        }
+        // Open device
+        if (mmioOpenAdvanced(handle, base, size, path) != MMIO_SUCCESS) {
+            // Free handle before throwing exception
+            mmioFree(handle);
+            throw new RuntimeException(mmioErrMessage(handle));
+        }
+    }
+
+    /**
      * Close and free handle.
      */
     @Override
@@ -87,7 +109,7 @@ public class Mmio implements AutoCloseable {
         mmioClose(handle);
         mmioFree(handle);
     }
-    
+
     /**
      * Handle accessor.
      *
@@ -115,6 +137,18 @@ public class Mmio implements AutoCloseable {
      */
     @JniMethod(accessor = "mmio_open")
     public static native int mmioOpen(long mmio, long base, long size);
+
+    /**
+     * Map the region of physical memory at the specified base address with the specified size.
+     *
+     * @param mmio Valid pointer to an allocated MMIO handle structure.
+     * @param base Doesn't need be aligned to a page boundary.
+     * @param size Doesn't need be aligned to a page boundary.
+     * @param path MMIO path /dev/mem, /dev/gpiomem, etc.
+     * @return 0 on success, or a negative MMIO error code on failure.
+     */
+    @JniMethod(accessor = "mmio_open_advanced")
+    public static native int mmioOpenAdvanced(long mmio, long base, long size, final String path);
 
     /**
      * Return the pointer to the mapped physical memory.
