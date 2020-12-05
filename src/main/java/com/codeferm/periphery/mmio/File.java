@@ -69,13 +69,25 @@ public class File {
      */
     private List<String> groupName;
     /**
-     * Data in register offset inside chip
+     * Data in register on offset inside chip
      */
-    private List<Integer> dataInOffset;
+    private List<Integer> dataInOnOffset;
     /**
-     * Data out register offset inside chip
+     * Data in register off offset inside chip
      */
-    private List<Integer> dataOutOffset;
+    private List<Integer> dataInOffOffset;
+    /**
+     * Data out register on offset inside chip
+     */
+    private List<Integer> dataOutOnOffset;
+    /**
+     * Data out register off offset inside chip
+     */
+    private List<Integer> dataOutOffOffset;
+    /**
+     * Use input data register to detect changes.
+     */
+    private boolean useInputDataReg;
 
     /**
      * Default constructor.
@@ -87,7 +99,7 @@ public class File {
         return description;
     }
 
-    public void setDescription(String description) {
+    public void setDescription(final String description) {
         this.description = description;
     }
 
@@ -95,7 +107,7 @@ public class File {
         return gpioDev;
     }
 
-    public void setGpioDev(List<Integer> gpioDev) {
+    public void setGpioDev(final List<Integer> gpioDev) {
         this.gpioDev = gpioDev;
     }
 
@@ -103,7 +115,7 @@ public class File {
         return chips;
     }
 
-    public void setChips(List<Long> chips) {
+    public void setChips(final List<Long> chips) {
         this.chips = chips;
     }
 
@@ -111,7 +123,7 @@ public class File {
         return mmioSize;
     }
 
-    public void setMmioSize(List<Long> mmioSize) {
+    public void setMmioSize(final List<Long> mmioSize) {
         this.mmioSize = mmioSize;
     }
 
@@ -119,7 +131,7 @@ public class File {
         return pins;
     }
 
-    public void setPins(List<Integer> pins) {
+    public void setPins(final List<Integer> pins) {
         this.pins = pins;
     }
 
@@ -127,7 +139,7 @@ public class File {
         return pinChip;
     }
 
-    public void setPinChip(List<Integer> pinChip) {
+    public void setPinChip(final List<Integer> pinChip) {
         this.pinChip = pinChip;
     }
 
@@ -135,7 +147,7 @@ public class File {
         return pinName;
     }
 
-    public void setPinName(List<String> pinName) {
+    public void setPinName(final List<String> pinName) {
         this.pinName = pinName;
     }
 
@@ -143,7 +155,7 @@ public class File {
         return groupChip;
     }
 
-    public void setGroupChip(List<Integer> groupChip) {
+    public void setGroupChip(final List<Integer> groupChip) {
         this.groupChip = groupChip;
     }
 
@@ -151,24 +163,48 @@ public class File {
         return groupName;
     }
 
-    public void setGroupName(List<String> groupName) {
+    public void setGroupName(final List<String> groupName) {
         this.groupName = groupName;
     }
 
-    public List<Integer> getDataInOffset() {
-        return dataInOffset;
+    public List<Integer> getDataInOnOffset() {
+        return dataInOnOffset;
     }
 
-    public void setDataInOffset(List<Integer> dataInOffset) {
-        this.dataInOffset = dataInOffset;
+    public void setDataInOnOffset(final List<Integer> dataInOnOffset) {
+        this.dataInOnOffset = dataInOnOffset;
     }
 
-    public List<Integer> getDataOutOffset() {
-        return dataOutOffset;
+    public List<Integer> getDataInOffOffset() {
+        return dataInOffOffset;
     }
 
-    public void setDataOutOffset(List<Integer> dataOutOffset) {
-        this.dataOutOffset = dataOutOffset;
+    public void setDataInOffOffset(final List<Integer> dataInOffOffset) {
+        this.dataInOffOffset = dataInOffOffset;
+    }
+
+    public List<Integer> getDataOutOnOffset() {
+        return dataOutOnOffset;
+    }
+
+    public void setDataOutOnOffset(final List<Integer> dataOutOnOffset) {
+        this.dataOutOnOffset = dataOutOnOffset;
+    }
+
+    public List<Integer> getDataOutOffOffset() {
+        return dataOutOffOffset;
+    }
+
+    public void setDataOutOffOffsetfinal(final List<Integer> dataOutOffOffset) {
+        this.dataOutOffOffset = dataOutOffOffset;
+    }
+
+    public boolean isUseInputDataReg() {
+        return useInputDataReg;
+    }
+
+    public void setUseInputDataReg(final boolean useInputDataReg) {
+        this.useInputDataReg = useInputDataReg;
     }
 
     /**
@@ -266,8 +302,11 @@ public class File {
             pinName = strToStrList(properties.getProperty("pin.name"));
             groupChip = decToIntList(properties.getProperty("group.chip"));
             groupName = strToStrList(properties.getProperty("group.name"));
-            dataInOffset = hexToIntList(properties.getProperty("data.in.offset"));
-            dataOutOffset = hexToIntList(properties.getProperty("data.out.offset"));
+            dataInOnOffset = hexToIntList(properties.getProperty("data.in.on.offset"));
+            dataInOffOffset = hexToIntList(properties.getProperty("data.in.off.offset"));
+            dataOutOnOffset = hexToIntList(properties.getProperty("data.out.on.offset"));
+            dataOutOffOffset = hexToIntList(properties.getProperty("data.out.off.offset"));
+            useInputDataReg = Boolean.parseBoolean(properties.getProperty("use.input.data.reg"));
             // Create minimal pin Map with chip, pin and pin name
             for (int i = 0; i < pins.size(); i++) {
                 PinKey key = new PinKey(gpioDev.get(pinChip.get(i)), pins.get(i));
@@ -289,9 +328,10 @@ public class File {
         final var properties = loadProperties(inFileName);
         try (final var writer = new BufferedWriter(new FileWriter(outFileName))) {
             writer.write(String.format(
-                    "#\n# Generated by %s on %s\n#\n# Format: pin.chip.number = group name, pin name, data in name, "
-                    + "data in offset, data in mask, data out name, data out offset, data out mask\n#\n\n", this.
-                            getClass().getCanonicalName(), DateTimeFormatter.ISO_INSTANT.format(Instant.now())));
+                    "#\n# Generated by %s on %s\n#\n# Format: pin.chip.number = group name, pin name, data in on name, "
+                    + "data in on offset, data in on mask, data in off name, data in off offset, data in off mask, data out on name, "
+                    + "data out on offset, data out on mask, data out off name, data out off offset, data out off mask\n#\n\n",
+                    this.getClass().getCanonicalName(), DateTimeFormatter.ISO_INSTANT.format(Instant.now())));
             writer.write(String.format("description = %s\nchips = %s\nchip.size = %s\ngpio.dev = %s\n", properties.getProperty(
                     "description"), properties.getProperty("chips"), properties.getProperty("chip.size"), properties.getProperty(
                     "gpio.dev")));
@@ -302,10 +342,12 @@ public class File {
                 // Make sure detect worked by making sure there's a group name
                 if (value.getGroupName() != null) {
                     writer.write(String.format(
-                            "pin.%d.%d = %s, %s, %s, 0x%02x, 0x%08x, %s, 0x%02x, 0x%08x\n",
-                            key.getChip(), key.getPin(), value.getGroupName(), value.getName(), value.getDataIn().getName(), value.
-                            getDataIn().getOffset(), value.getDataIn().getMask(), value.getDataOut().getName(), value.getDataOut().
-                            getOffset(), value.getDataOut().getMask()));
+                            "pin.%d.%d = %s, %s, %s, 0x%02x, 0x%08x, %s, 0x%02x, 0x%08x, %s, 0x%02x, 0x%08x, %s, 0x%02x, 0x%08x\n",
+                            key.getChip(), key.getPin(), value.getGroupName(), value.getName(),
+                            value.getDataInOn().getName(), value.getDataInOn().getOffset(), value.getDataInOn().getMask(), value.
+                            getDataInOff().getName(), value.getDataInOff().getOffset(), value.getDataInOff().getMask(), value.
+                            getDataOutOn().getName(), value.getDataOutOn().getOffset(), value.getDataOutOn().getMask(), value.
+                            getDataOutOff().getName(), value.getDataOutOff().getOffset(), value.getDataOutOff().getMask()));
                 } else {
                     logger.warn(String.format("Chip %d pin %d detection failed, so skipping", key.getChip(), key.getPin()));
                 }
@@ -325,7 +367,7 @@ public class File {
         var i = -1;
         if (str != null && !str.toLowerCase().contains("null")) {
             // Trim and remove 0x before converting to int (handles values >= 0x80000000 too)
-            i = (int)Long.parseLong(str.trim().substring(2), 16);
+            i = (int) Long.parseLong(str.trim().substring(2), 16);
         }
         return i;
     }
@@ -363,9 +405,11 @@ public class File {
             if (key[0].contains("pin")) {
                 final var value = ((String) entry.getValue()).split(",");
                 final var pinKey = new PinKey(Integer.parseInt(key[1]), Integer.parseInt(key[2]));
-                final var dataIn = new Register(strToStr(value[2]), hexToInt(value[3]), hexToInt(value[4]));
-                final var dataOut = new Register(strToStr(value[5]), hexToInt(value[6]), hexToInt(value[7]));
-                final var pin = new Pin(pinKey, strToStr(value[0]), strToStr(value[1]), dataIn, dataOut);
+                final var dataInOn = new Register(strToStr(value[2]), hexToInt(value[3]), hexToInt(value[4]));
+                final var dataInOff = new Register(strToStr(value[5]), hexToInt(value[6]), hexToInt(value[7]));
+                final var dataOutOn = new Register(strToStr(value[8]), hexToInt(value[9]), hexToInt(value[10]));
+                final var dataOutOff = new Register(strToStr(value[11]), hexToInt(value[12]), hexToInt(value[13]));
+                final var pin = new Pin(pinKey, strToStr(value[0]), strToStr(value[1]), dataInOn, dataInOff, dataOutOn, dataOutOff);
                 pinMap.put(pinKey, pin);
             }
         });

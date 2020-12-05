@@ -49,13 +49,13 @@ public class Perf implements Callable<Integer> {
      * Read pin value.
      *
      * @param pin Pin.
-     * @return True = on, false = off..
+     * @return True = on, false = off.
      */
     public boolean read(final Pin pin) {
         final var value = new int[1];
-        Mmio.mmioRead32(pin.getMmioHadle(), pin.getDataIn().getOffset(), value);
+        Mmio.mmioRead32(pin.getMmioHadle(), pin.getDataInOn().getOffset(), value);
         boolean ret;
-        if ((value[0] & pin.getDataIn().getMask()) == 0) {
+        if ((value[0] & pin.getDataInOn().getMask()) == 0) {
             ret = false;
         } else {
             ret = true;
@@ -67,16 +67,26 @@ public class Perf implements Callable<Integer> {
      * Write pin value.
      *
      * @param pin Pin.
-     * @param value Pin mode.
+     * @param value True = on, false = off.
      */
     public void write(final Pin pin, final boolean value) {
         final var reg = new int[1];
-        // Get current register value
-        Mmio.mmioRead32(pin.getMmioHadle(), pin.getDataOut().getOffset(), reg);
+        final var dataOutOnOffset = pin.getDataOutOn().getOffset();
+        final var dataOutOffOffset = pin.getDataOutOff().getOffset();
         if (!value) {
-            Mmio.mmioWrite32(pin.getMmioHadle(), pin.getDataOut().getOffset(), reg[0] & (pin.getDataOut().getMask() ^ 0xffffffff));
+            // Get current register value
+            Mmio.mmioRead32(pin.getMmioHadle(), dataOutOffOffset, reg);
+            // If on and off registers are the same use AND
+            if (dataOutOffOffset.equals(dataOutOnOffset)) {
+                Mmio.mmioWrite32(pin.getMmioHadle(), dataOutOffOffset, reg[0] & pin.getDataOutOff().getMask());
+            } else {
+                // If on and off registers are different use OR like Raspberry Pi
+                Mmio.mmioWrite32(pin.getMmioHadle(), dataOutOffOffset, reg[0] | pin.getDataOutOff().getMask());
+            }
         } else {
-            Mmio.mmioWrite32(pin.getMmioHadle(), pin.getDataOut().getOffset(), reg[0] | pin.getDataOut().getMask());
+            // Get current register value
+            Mmio.mmioRead32(pin.getMmioHadle(), dataOutOnOffset, reg);
+            Mmio.mmioWrite32(pin.getMmioHadle(), dataOutOnOffset, reg[0] | pin.getDataOutOn().getMask());
         }
     }
 
@@ -126,35 +136,6 @@ public class Perf implements Callable<Integer> {
     }
 
     /**
-     * Performance test doing same thing as MMIO write without method overhead.
-     *
-     * @param pin Pin number.
-     * @param samples How many samples to run.
-     */
-    public void perfBetter(final Pin pin, final long samples) {
-        try (final var gpio = new Gpio(String.format("/dev/gpiochip%d", pin.getKey().getChip()), pin.getKey().getPin(), GPIO_DIR_OUT)) {
-            final var reg = new int[1];
-            final var offest = pin.getDataOut().getOffset();
-            final var mask = pin.getDataOut().getMask();
-            final var maskInv = mask ^ 0xffffffff;
-            final var handle = pin.getMmioHadle();
-            logger.info(String.format("Running better MMIO write test with %d samples", samples));
-            final var start = Instant.now();
-            // Turn pin on and off, so we can see on a scope
-            for (var i = 0; i < samples; i++) {
-                Mmio.mmioRead32(handle, offest, reg);
-                Mmio.mmioWrite32(handle, offest, reg[0] | mask);
-                Mmio.mmioRead32(handle, offest, reg);
-                Mmio.mmioWrite32(handle, offest, reg[0] & maskInv);
-            }
-            final var finish = Instant.now();
-            // Elapsed milliseconds
-            final var timeElapsed = Duration.between(start, finish).toMillis();
-            logger.info(String.format("%.2f KHz", ((double) samples / (double) timeElapsed)));
-        }
-    }
-
-    /**
      * Performance test using raw MMIO and only reading register once before writes.
      *
      * @param pin Pin number.
@@ -162,20 +143,33 @@ public class Perf implements Callable<Integer> {
      */
     public void perfBest(final Pin pin, final long samples) {
         try (final var gpio = new Gpio(String.format("/dev/gpiochip%d", pin.getKey().getChip()), pin.getKey().getPin(), GPIO_DIR_OUT)) {
-            final var reg = new int[1];
-            final var offest = pin.getDataOut().getOffset();
             final var handle = pin.getMmioHadle();
+            final var regOn = new int[1];
+            final var dataOutOnOffset = pin.getDataOutOn().getOffset();
             // Only do read one time to get current value
-            Mmio.mmioRead32(handle, offest, reg);
-            final var on = reg[0] | pin.getDataOut().getMask();
-            final var off = reg[0] & (pin.getDataOut().getMask() ^ 0xffffffff);
+            Mmio.mmioRead32(handle, dataOutOnOffset, regOn);
+            final var regOff = new int[1];
+            final var dataOutOffOffset = pin.getDataOutOff().getOffset();
+            // Only do read one time to get current value
+            Mmio.mmioRead32(handle, dataOutOffOffset, regOff);
             logger.info(String.format("Running best MMIO write test with %d samples", samples));
             final var start = Instant.now();
-            // Turn pin on and off, so we can see on a scope
-            // Turn pin on and off, so we can see on a scope
-            for (var i = 0; i < samples; i++) {
-                Mmio.mmioWrite32(handle, offest, on);
-                Mmio.mmioWrite32(handle, offest, off);
+            // If on and off registers are the same use AND
+            if (dataOutOffOffset.equals(dataOutOnOffset)) {
+                final var on = regOff[0] | pin.getDataOutOn().getMask();
+                final var off = regOff[0] & (pin.getDataOutOff().getMask());
+                for (var i = 0; i < samples; i++) {
+                    Mmio.mmioWrite32(handle, dataOutOnOffset, on);
+                    Mmio.mmioWrite32(handle, dataOutOffOffset, off);
+                }
+            } else {
+                // If on and off registers are different use OR like Raspberry Pi
+                final var on = regOn[0] | pin.getDataOutOn().getMask();
+                final var off = regOn[0] | pin.getDataOutOff().getMask();
+                for (var i = 0; i < samples; i++) {
+                    Mmio.mmioWrite32(handle, dataOutOnOffset, on);
+                    Mmio.mmioWrite32(handle, dataOutOffOffset, off);
+                }
             }
             final var finish = Instant.now();
             // Elapsed milliseconds
@@ -210,7 +204,6 @@ public class Perf implements Callable<Integer> {
         final var pin = pinMap.get(new PinKey(device, line));
         perfGpiod(pin, 10000000);
         perfGood(pin, 10000000);
-        perfBetter(pin, 10000000);
         perfBest(pin, 10000000);
         // Close all MMIO handles
         mmioHandle.entrySet().forEach((entry) -> {

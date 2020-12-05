@@ -195,7 +195,7 @@ Output:
 11:55:39.540 [main] INFO  MemScan - Mode difference found at offset 0x00000004 before 0x80003ef7 after 0x80003cf7 difference 0x00000200
 11:55:39.543 [main] INFO  MemScan - Data difference found at offset 0x00000000 before 0xa0003cf7 after 0xa2003cf7 difference 0x02000000
 11:55:39.545 [main] INFO  MemScan - Data difference found at offset 0x00000004 before 0x80003cf7 after 0x80003ef7 difference 0x00000200
-11:55:39.548 [main] ERROR MemScan - Device 0 line   9 Error Kernel version does not support configuring GPIO line bias
+11:55:39.548 [main] ERROR MemScan - Device 0 line 9 Error Kernel version does not support configuring GPIO line bias
 ```
 
 Note the bias error is due to no compiling with latest gpio.h header.
@@ -205,17 +205,17 @@ Note that most performance tests focus on writes and not CPU overhead, so it's
 hard to compare. Technically you will actually be doing something like bit
 banging to simulate a protocol, so you need extra CPU bandwidth to do that.
 Please note write frequency is based on square wave (rapid on/off). You can
-increase clock speed to improve performance on some boards. I used the Armbian
+increase clock speed to improve performance on some boards. I used the OS
 defaults.
 
 |SBC              |OS           |CPU Freq|GPIOD Write KHz|MMIO Write KHz|Average CPU|
 | --------------- | ----------- | ------ | ------------- | ------------ | --------- |
 |Nano Pi Duo v1.0 |Armbian Focal|1.0 GHz |242            |1790          |25%        |
 |Nano Pi M1       |Armbian Focal|1.2 GHz |320            |2355          |25%        |
-|Nano Pi Neo Plus2|Armbian Focal|1.0 GHz |339            |2341          |25%        |
+|Nano Pi Neo Plus2|Armbian Focal|1.0 GHz |347            |2356          |25%        |
 |Odroid C2        |Armbian Focal|1.5 GHz |365            |2346          |25%        |
 |Odroid XU4       |Armbian Focal|2.0 GHz | 44            | 300          |12%        |
-|Raspberry Pi 3   |Ubuntu Focal |1.0 2Hz |119            |4541          |25%        |
+|Raspberry Pi 3   |Ubuntu Focal |1.2 GHz |119            |4541          |25%        |
 
 ## How GPIO pins are mapped
 This is based on testing on a NanoPi Duo. gpiochip0 starts at 0 and gpiochip1

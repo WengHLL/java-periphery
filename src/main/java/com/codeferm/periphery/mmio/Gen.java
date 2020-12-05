@@ -109,27 +109,45 @@ public class Gen implements Callable<Integer> {
      * @param mmioHandle MMIO handles.
      * @param groupChip Chips ports are on.
      * @param groupName Pin group names.
-     * @param dataInOffset Data register in offsets.
-     * @param dataOutOffset Data register out offsets.
+     * @param dataInOnOffset Data register in on offsets.
+     * @param dataInOffOffset Data register in 0ff offsets.
+     * @param dataOutOnOffset Data register out on offsets.
+     * @param dataOutOffOffset Data register out off offsets.
+     * @param useInputDataReg Use input register instead of output register.
      */
     public void setDataReg(final Pin pin, final List<Long> mmioHandle, final List<Integer> groupChip, final List<String> groupName,
-            final List<Integer> dataInOffset, final List<Integer> dataOutOffset) {
+            final List<Integer> dataInOnOffset, final List<Integer> dataInOffOffset, final List<Integer> dataOutOnOffset,
+            final List<Integer> dataOutOffOffset, final boolean useInputDataReg) {
+        final List<Integer> dataOffset;
+        // Use input data register to check for changes
+        if (useInputDataReg) {
+            dataOffset = dataInOnOffset;
+        } else {
+            dataOffset = dataOutOnOffset;
+        }
         final var dev = String.format("/dev/gpiochip%d", pin.getKey().getChip());
         // Set pin for input, output and look for delta
         try (final var gpio = new Gpio(dev, pin.getKey().getPin(), new Gpio.GpioConfig().setBias(GPIO_BIAS_DEFAULT).
                 setDirection(GPIO_DIR_OUT).setDrive(GPIO_DRIVE_DEFAULT).setEdge(GPIO_EDGE_NONE).setInverted(false).setLabel(cString(
                 Gen.class.getSimpleName())))) {
             Gpio.gpioWrite(gpio.getHandle(), false);
-            final var list1 = getRegValues(mmioHandle, groupChip, dataOutOffset);
+            final var list1 = getRegValues(mmioHandle, groupChip, dataOffset);
             Gpio.gpioWrite(gpio.getHandle(), true);
-            final var list2 = getRegValues(mmioHandle, groupChip, dataOutOffset);
+            final var list2 = getRegValues(mmioHandle, groupChip, dataOffset);
             // Find the register delta
             final var reg = listDiff(list1, list2);
             // Make sure a delta is detected
             if (reg >= 0) {
-                pin.setGroupName(groupName.get(reg)).setDataIn(new Register("IN", dataInOffset.get(reg % dataInOffset.size()),
-                        valueDiff(list1.get(reg), list2.get(reg)))).setDataOut(new Register("OUT", dataOutOffset.get(reg),
-                        valueDiff(list1.get(reg), list2.get(reg))));
+                pin.setGroupName(groupName.get(reg)).setDataInOn(new Register("IN_ON", dataInOnOffset.get(reg % dataInOnOffset.
+                        size()), valueDiff(list1.get(reg), list2.get(reg)))).setDataInOff(new Register("IN_OFF", dataInOffOffset.
+                        get(reg % dataInOffOffset.size()), valueDiff(list1.get(reg), list2.get(reg)))).setDataOutOn(new Register(
+                        "OUT_ON", dataOutOnOffset.get(reg % dataOutOnOffset.size()), valueDiff(list1.get(reg), list2.get(reg)))).
+                        setDataOutOff(new Register("OUT_OFF", dataOutOffOffset.get(reg % dataOutOffOffset.size()), valueDiff(list1.
+                                get(reg), list2.get(reg))));
+                // If data out uses same register for on/off then generate AND mask for off.
+                if (pin.getDataOutOn().getOffset().equals(pin.getDataOutOff().getOffset())) {
+                    pin.getDataOutOff().setMask(pin.getDataOutOff().getMask() ^ 0xffffffff);
+                }
             } else {
                 logger.warn(String.format("Chip %d Pin %d data register change not detected", pin.getKey().getChip(),
                         pin.getKey().getPin()));
@@ -160,8 +178,8 @@ public class Gen implements Callable<Integer> {
             }
             // Set register offset and mask for each pin
             pinMap.entrySet().stream().map((entry) -> entry.getValue()).forEachOrdered((value) -> {
-                setDataReg(value, mmioHandle, file.getGroupChip(), file.getGroupName(), file.getDataInOffset(),
-                        file.getDataOutOffset());
+                setDataReg(value, mmioHandle, file.getGroupChip(), file.getGroupName(), file.getDataInOnOffset(), file.
+                        getDataInOffOffset(), file.getDataOutOnOffset(), file.getDataOutOffOffset(), file.isUseInputDataReg());
             });
             // Generate properties file
             file.genProperties(pinMap, inFileName, outFileName);

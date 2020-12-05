@@ -114,7 +114,7 @@ public class MemScan implements Callable<Integer> {
             // Show the register delta
             listDiff(list1, list2, "Mode");
         } catch (RuntimeException e) {
-            logger.error(String.format("Device %d line %3d Error %s", device, line, e.getMessage()));
+            logger.error(String.format("Device %d line %d Error %s", device, line, e.getMessage()));
         }
     }
 
@@ -136,7 +136,7 @@ public class MemScan implements Callable<Integer> {
             // Show the register delta
             listDiff(list1, list2, "Data");
         } catch (RuntimeException e) {
-            logger.error(String.format("Device %d line %3d Error %s", device, line, e.getMessage()));
+            logger.error(String.format("Device %d line %d Error %s", device, line, e.getMessage()));
         }
     }
 
@@ -162,7 +162,7 @@ public class MemScan implements Callable<Integer> {
             // Show the register delta
             listDiff(list1, list2, "Pull down");
         } catch (RuntimeException e) {
-            logger.error(String.format("Device %d line %3d Error %s", device, line, e.getMessage()));
+            logger.error(String.format("Device %d line %d Error %s", device, line, e.getMessage()));
         }
     }
 

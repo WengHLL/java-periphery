@@ -27,13 +27,21 @@ public class Pin {
      */
     private String name;
     /**
-     * Pin data input register.
+     * Pin data input on register.
      */
-    private Register dataIn;
+    private Register dataInOn;
     /**
-     * Pin data output register.
+     * Pin data input off register.
      */
-    private Register dataOut;
+    private Register dataInOff;
+    /**
+     * Pin data output on register.
+     */
+    private Register dataOutOn;
+    /**
+     * Pin data output off register.
+     */
+    private Register dataOutOff;
     /**
      * MMIO handle.
      */
@@ -71,22 +79,27 @@ public class Pin {
      * @param key Pin key.
      * @param groupName Group name.
      * @param name Pin name.
-     * @param dataIn Pin data input register.
-     * @param dataOut Pin data output register.
+     * @param dataInOn Data input on register.
+     * @param dataInOff Data input off register.
+     * @param dataOutOn Data output on register.
+     * @param dataOutOff Data ouput off register.
      */
-    public Pin(PinKey key, String groupName, String name, Register dataIn, Register dataOut) {
+    public Pin(PinKey key, String groupName, String name, Register dataInOn, Register dataInOff, Register dataOutOn,
+            Register dataOutOff) {
         this.key = key;
         this.groupName = groupName;
         this.name = name;
-        this.dataIn = dataIn;
-        this.dataOut = dataOut;
+        this.dataInOn = dataInOn;
+        this.dataInOff = dataInOff;
+        this.dataOutOn = dataOutOn;
+        this.dataOutOff = dataOutOff;
     }
 
     public PinKey getKey() {
         return key;
     }
 
-    public Pin setKey(final PinKey key) {
+    public Pin setKey(PinKey key) {
         this.key = key;
         return this;
     }
@@ -95,7 +108,7 @@ public class Pin {
         return groupName;
     }
 
-    public Pin setGroupName(final String groupName) {
+    public Pin setGroupName(String groupName) {
         this.groupName = groupName;
         return this;
     }
@@ -104,26 +117,44 @@ public class Pin {
         return name;
     }
 
-    public Pin setName(final String name) {
+    public Pin setName(String name) {
         this.name = name;
         return this;
     }
 
-    public Register getDataIn() {
-        return dataIn;
+    public Register getDataInOn() {
+        return dataInOn;
     }
 
-    public Pin setDataIn(final Register dataIn) {
-        this.dataIn = dataIn;
+    public Pin setDataInOn(Register dataInOn) {
+        this.dataInOn = dataInOn;
         return this;
     }
 
-    public Register getDataOut() {
-        return dataOut;
+    public Register getDataInOff() {
+        return dataInOff;
     }
 
-    public Pin setDataOut(final Register dataOut) {
-        this.dataOut = dataOut;
+    public Pin setDataInOff(Register dataInOff) {
+        this.dataInOff = dataInOff;
+        return this;
+    }
+
+    public Register getDataOutOn() {
+        return dataOutOn;
+    }
+
+    public Pin setDataOutOn(Register dataOutOn) {
+        this.dataOutOn = dataOutOn;
+        return this;
+    }
+
+    public Register getDataOutOff() {
+        return dataOutOff;
+    }
+
+    public Pin setDataOutOff(Register dataOutOff) {
+        this.dataOutOff = dataOutOff;
         return this;
     }
 
@@ -131,7 +162,7 @@ public class Pin {
         return mmioHadle;
     }
 
-    public Pin setMmioHadle(final long mmioHadle) {
+    public Pin setMmioHadle(long mmioHadle) {
         this.mmioHadle = mmioHadle;
         return this;
     }
@@ -144,12 +175,14 @@ public class Pin {
     @Override
     public int hashCode() {
         int hash = 7;
-        hash = 89 * hash + Objects.hashCode(this.key);
-        hash = 89 * hash + Objects.hashCode(this.groupName);
-        hash = 89 * hash + Objects.hashCode(this.name);
-        hash = 89 * hash + Objects.hashCode(this.dataIn);
-        hash = 89 * hash + Objects.hashCode(this.dataOut);
-        hash = 89 * hash + (int) (this.mmioHadle ^ (this.mmioHadle >>> 32));
+        hash = 83 * hash + Objects.hashCode(this.key);
+        hash = 83 * hash + Objects.hashCode(this.groupName);
+        hash = 83 * hash + Objects.hashCode(this.name);
+        hash = 83 * hash + Objects.hashCode(this.dataInOn);
+        hash = 83 * hash + Objects.hashCode(this.dataInOff);
+        hash = 83 * hash + Objects.hashCode(this.dataOutOn);
+        hash = 83 * hash + Objects.hashCode(this.dataOutOff);
+        hash = 83 * hash + (int) (this.mmioHadle ^ (this.mmioHadle >>> 32));
         return hash;
     }
 
@@ -160,7 +193,7 @@ public class Pin {
      * @return True if equal.
      */
     @Override
-    public boolean equals(Object obj) {
+    public boolean equals(final Object obj) {
         if (this == obj) {
             return true;
         }
@@ -183,10 +216,16 @@ public class Pin {
         if (!Objects.equals(this.key, other.key)) {
             return false;
         }
-        if (!Objects.equals(this.dataIn, other.dataIn)) {
+        if (!Objects.equals(this.dataInOn, other.dataInOn)) {
             return false;
         }
-        if (!Objects.equals(this.dataOut, other.dataOut)) {
+        if (!Objects.equals(this.dataInOff, other.dataInOff)) {
+            return false;
+        }
+        if (!Objects.equals(this.dataOutOn, other.dataOutOn)) {
+            return false;
+        }
+        if (!Objects.equals(this.dataOutOff, other.dataOutOff)) {
             return false;
         }
         return true;
@@ -199,7 +238,7 @@ public class Pin {
      */
     @Override
     public String toString() {
-        return "Pin{" + "key=" + key + ", groupName=" + groupName + ", name=" + name + ", dataIn=" + dataIn + ", dataOut=" + dataOut
-                + ", mmioHadle=" + mmioHadle + '}';
+        return "Pin{" + "key=" + key + ", groupName=" + groupName + ", name=" + name + ", dataInOn=" + dataInOn + ", dataInOff="
+                + dataInOff + ", dataOutOn=" + dataOutOn + ", dataOutOff=" + dataOutOff + ", mmioHadle=" + mmioHadle + '}';
     }
 }
