@@ -412,6 +412,7 @@ public class File {
         chips = hexToLongList(properties.getProperty("chips"));
         mmioSize = decToLongList(properties.getProperty("chip.size"));
         gpioDev = decToIntList(properties.getProperty("gpio.dev"));
+        memPath = properties.getProperty("mem.path");
         final Map<PinKey, Pin> pinMap = new TreeMap<>();
         // Process all properties
         properties.entrySet().forEach((entry) -> {

@@ -190,25 +190,31 @@ public class Perf implements Callable<Integer> {
         final var file = new File();
         // Build pin Map
         final Map<PinKey, Pin> pinMap = file.loadPinMap(inFileName);
-        // MMIO handle map based on GPIO dev key
-        final Map<Integer, Long> mmioHandle = new HashMap<>();
-        // Open MMIO for each chip
-        for (int i = 0; i < file.getChips().size(); i++) {
-            final var mmio = new Mmio(file.getChips().get(i), file.getMmioSize().get(i), file.getMemPath());
-            mmioHandle.put(file.getGpioDev().get(i), mmio.getHandle());
+        // Make sure we have pins loaded
+        if (!pinMap.isEmpty()) {
+            // MMIO handle map based on GPIO dev key
+            final Map<Integer, Long> mmioHandle = new HashMap<>();
+            // Open MMIO for each chip
+            for (int i = 0; i < file.getChips().size(); i++) {
+                final var mmio = new Mmio(file.getChips().get(i), file.getMmioSize().get(i), file.getMemPath());
+                mmioHandle.put(file.getGpioDev().get(i), mmio.getHandle());
+            }
+            // Set MMIO handle for each pin
+            pinMap.entrySet().forEach((entry) -> {
+                entry.getValue().setMmioHadle(mmioHandle.get(entry.getKey().getChip()));
+            });
+            final var pin = pinMap.get(new PinKey(device, line));
+            perfGpiod(pin, 10000000);
+            perfGood(pin, 10000000);
+            perfBest(pin, 10000000);
+            // Close all MMIO handles
+            mmioHandle.entrySet().forEach((entry) -> {
+                Mmio.mmioClose(entry.getValue());
+            });
+        } else {
+            logger.error("Pin map empty. Make sure you have a valid property file.");
+            exitCode = 1;
         }
-        // Set MMIO handle for each pin
-        pinMap.entrySet().forEach((entry) -> {
-            entry.getValue().setMmioHadle(mmioHandle.get(entry.getKey().getChip()));
-        });
-        final var pin = pinMap.get(new PinKey(device, line));
-        perfGpiod(pin, 10000000);
-        perfGood(pin, 10000000);
-        perfBest(pin, 10000000);
-        // Close all MMIO handles
-        mmioHandle.entrySet().forEach((entry) -> {
-            Mmio.mmioClose(entry.getValue());
-        });
         return exitCode;
     }
 
