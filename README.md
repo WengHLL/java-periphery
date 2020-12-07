@@ -174,7 +174,7 @@ NanoPi Neo Plus2 (H5) example:
 * `sudo java -cp $HOME/java-periphery/target/java-periphery-1.0.0-SNAPSHOT.jar:$HOME/java-periphery/target/java-periphery-1.0.0-SNAPSHOT-linux64.jar com.codeferm.periphery.mmio.Perf -i neoplus2-map.properties -d 1 -l 203`
 
 As you can see above the same performance test code works on a 32 bit H2+ and a
-64 bit H5 CPU. This means almost all Allwinner CPUs can be easily supported with
+64 bit H5 CPU. This means almost all boards can be easily supported with
 the right input file. This is probably the only high performance GPIO code that
 is truly cross platform. No custom adapters or other one off code is required
 currently. Also, I use the same pin numbers as the GPIO device, so no goofy
