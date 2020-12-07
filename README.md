@@ -12,6 +12,8 @@ This gets attached to the Maven project as as the native source zip file.
 * Builds the native source tar for the current platform.
 * Built native library is stored in a platform specific jar. This gets attached
 to the Maven project as a platform specific jar file.
+* Cross platform MMIO GPIO that doesn't require one off code for each board. Only
+a simple property file is required to map registers.
 * All wrapper classes support AutoCloseable, so you can use the
 [try-with-resources](https://docs.oracle.com/javase/tutorial/essential/exceptions/tryResourceClose.html)
 statement to automatically close and free native resources. This prevents hard
@@ -70,10 +72,10 @@ Check each log in scripts directory to be sure there were no errors after runnin
 install.sh.
 * Since linux 4.8 the GPIO sysfs interface is [deprecated](https://www.kernel.org/doc/html/latest/admin-guide/gpio/sysfs.html).
 Userspace should use the character device instead.
-* I have tested NanoPi Duo v1.1 for 32 bit and NanoPi Neo 2 Plus for 64 bit using
-the latest Armbian release. The ability to switch seemlessly between 32 and 64
-bit platforms gives you a wide range of SBC choices. I'm currently testing with
-Ubuntu 20.04 LTS Focal Fossa using 5.9 kernel.
+* I have tested 32 bit and 64 bit boards using the latest Armbian release or in
+the case of the Raspberry Pi Ubuntu Server. The ability to switch seamlessly
+between boards gives you a wide range of SBC choices. I'm currently testing with
+Ubuntu 20.04 LTS Focal Fossa using 5.4 to 5.9 kernels.
 
 ## Armbian and built in buttons
 On the NanoPi Duo the built in button causes it to shutdown by default. You can
