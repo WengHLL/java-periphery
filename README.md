@@ -99,10 +99,8 @@ rules instead if you wish):
 * `ls /dev/spidev*` (Note SPI channels below)
 * `ls /dev/i2c*` (Note i2c devices below)
 * `sudo nano /etc/rc.local`
-<pre><code>chown -R root:periphery /dev/gpiochip0
-chmod -R ug+rw /dev/gpiochip0
-chown -R root:periphery /dev/gpiochip1
-chmod -R ug+rw /dev/gpiochip1
+<pre><code>chown -R root:periphery /dev/gpiochip* #/dev/gpiomem for sandbox
+chmod -R ug+rw /dev/gpiochip* #/dev/gpiomem for sandbox
 chown -R root:periphery /dev/i2c-0
 chmod -R ug+rw /dev/i2c-0
 chown -R root:periphery /dev/spidev1.0
