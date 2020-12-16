@@ -183,6 +183,26 @@ public class Spi implements AutoCloseable {
             byte extraFlags);
 
     /**
+     * Open the spidev device at the specified path, with the specified SPI mode, max speed in hertz, bit order, bits per word, and
+     * extra flags.
+     *
+     * SPI mode can be 0, 1, 2, or 3. Bit order can be MSB_FIRST or LSB_FIRST, as defined above. Bits per word specifies the
+     * transfer word size. Extra flags specified additional flags bitwise-ORed with the SPI mode.
+     *
+     * @param spi A valid pointer to an allocated SPI handle structure.
+     * @param path spidev path.
+     * @param mode Mode can be 0, 1, 2, or 3.
+     * @param maxSpeed Max speed in hertz.
+     * @param bitOrder Bit order can be MSB_FIRST or LSB_FIRST.
+     * @param bitsPerWord Transfer word size.
+     * @param extraFlags Additional flags bitwise-ORed with the SPI mode.
+     * @return 0 on success, or a negative SPI error code on failure.
+     */
+    @JniMethod(accessor = "spi_open_advanced2")
+    public static native int spiOpenAdvanced2(long spi, String path, int mode, int maxSpeed, int bitOrder, byte bitsPerWord,
+            int extraFlags);
+
+    /**
      * Shift out len word counts of the txbuf buffer, while shifting in len word counts to the rxbuf buffer.
      *
      * @param spi A valid pointer to an allocated SPI handle structure.
@@ -262,6 +282,16 @@ public class Spi implements AutoCloseable {
     public static native int spiGetExtraFlags(long spi, byte[] extraFlags);
 
     /**
+     * Get extra flags.
+     *
+     * @param spi A valid pointer to an allocated SPI handle structure.
+     * @param extraFlags Additional flags bitwise-ORed with the SPI mode.
+     * @return 0 on success, or a negative SPI error code on failure.
+     */
+    @JniMethod(accessor = "spi_get_extra_flags32")
+    public static native int spiGetExtraFlags32(long spi, int[] extraFlags);
+    
+    /**
      * Set the mode.
      *
      * @param spi A valid pointer to an allocated SPI handle structure.
@@ -311,6 +341,16 @@ public class Spi implements AutoCloseable {
     @JniMethod(accessor = "spi_set_extra_flags")
     public static native int spiSetExtraFlags(long spi, byte extraFlags);
 
+    /**
+     * Set extra flags.
+     *
+     * @param spi A valid pointer to an allocated SPI handle structure.
+     * @param extraFlags Additional flags bitwise-ORed with the SPI mode.
+     * @return 0 on success, or a negative SPI error code on failure.
+     */
+    @JniMethod(accessor = "spi_set_extra_flags32")
+    public static native int spiSetExtraFlags32(long spi, int extraFlags);
+    
     /**
      * Return the file descriptor (for the underlying spidev device) of the SPI handle.
      *
