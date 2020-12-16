@@ -15,12 +15,12 @@
         <maven.compiler.source>11</maven.compiler.source>
         <maven.compiler.target>11</maven.compiler.target>
         <hawtjni.version>1.19-SNAPSHOT</hawtjni.version>
-        <!-- master branch
+        <!-- master branch -->
         <c.periphery>https://raw.githubusercontent.com/vsergeev/c-periphery/master/src</c.periphery>
-        -->
-        <!-- devel branch-->
+        <!-- devel branch
         <c.periphery>https://raw.githubusercontent.com/vsergeev/c-periphery/devel/src</c.periphery>
-        <!-- Change CFLAGS here or pass on mvn command line to override -->
+        -->
+        <!-- Change extra CFLAGS here or pass on mvn command line to override -->
         <cflags></cflags>
     </properties>
     
